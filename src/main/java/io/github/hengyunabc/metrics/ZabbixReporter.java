@@ -120,7 +120,7 @@ public class ZabbixReporter	extends ScheduledReporter
 
 	private DataObject toDataObject(String type, String suffix, String key, Object value)
 	{
-		return DataObject.builder().host(this.hostName).key(type + suffix  + "[" + key  + "[Hello]").value("" + value).build();
+		return DataObject.builder().host(this.hostName).key(type + suffix   + key ).value("" + value).build();
 	}
 
 	/**
@@ -151,7 +151,7 @@ public class ZabbixReporter	extends ScheduledReporter
 
 	private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snapshot, List<DataObject> dataObjectList)
 	{
-		String type = "timers";
+		String type = "timers1111";
 		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
 		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
