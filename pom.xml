@@ -19,11 +19,11 @@
 		<version>1.0.1</version>
 	</parent>
 
-	<scm>
+	<!--<scm>
 		<connection>scm:git:ssh://github.com/omnifone/metrics-zabbix.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/omnifone/metrics-zabbix.git</developerConnection>
 		<url>http://github.com/omnifone/metrics-zabbix</url>
-	</scm>
+	</scm>-->
 
 	<dependencies>
 		<dependency>
