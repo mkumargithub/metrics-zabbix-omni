@@ -23,8 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ZabbixReporter
-		extends ScheduledReporter
+public class ZabbixReporter	extends ScheduledReporter
 {
 	private static final Logger logger = LoggerFactory.getLogger(ZabbixReporter.class);
 	String replacePercentSign = "";
@@ -121,7 +120,7 @@ public class ZabbixReporter
 
 	private DataObject toDataObject(String type, String key, String suffix, Object value)
 	{
-		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + this.prefix + key + "]").value("" + value).build();
+		return DataObject.builder().host(this.hostName).key(type + key  + "[" + this.prefix + suffix + "]").value("" + value).build();
 	}
 
 	/**
