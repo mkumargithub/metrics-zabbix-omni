@@ -118,9 +118,9 @@ public class ZabbixReporter	extends ScheduledReporter
 		this.prefix = prefix;
 	}
 
-	private DataObject toDataObject(String type, String key, String suffix, Object value)
+	private DataObject toDataObject(String type, String suffix, String key, Object value)
 	{
-		return DataObject.builder().host(this.hostName).key(type + key  + "[" + this.prefix + suffix + "]").value("" + value).build();
+		return DataObject.builder().host(this.hostName).key(type + suffix  + "[" + key  + "]").value("" + value).build();
 	}
 
 	/**
