@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- *
  * Updated mkumar
  */
 public class ZabbixReporter extends ScheduledReporter
@@ -36,13 +35,11 @@ public class ZabbixReporter extends ScheduledReporter
 	private String hostName;
 	private String prefix;
 
-	public static Builder forRegistry(MetricRegistry registry)
-	{
+	public static Builder forRegistry(MetricRegistry registry) {
 		return new Builder(registry);
 	}
 
-	public static class Builder
-	{
+	public static class Builder {
 		private String replacePercentSign = "";
 		private final MetricRegistry registry;
 		private String name = "zabbix-reporter";
@@ -52,8 +49,7 @@ public class ZabbixReporter extends ScheduledReporter
 		private String hostName;
 		private String prefix = "";
 
-		public Builder(MetricRegistry registry)
-		{
+		public Builder(MetricRegistry registry) {
 			this.registry = registry;
 
 			this.rateUnit = TimeUnit.SECONDS;
@@ -61,52 +57,43 @@ public class ZabbixReporter extends ScheduledReporter
 			this.filter = MetricFilter.ALL;
 		}
 
-		public Builder convertRatesTo(TimeUnit rateUnit)
-		{
+		public Builder convertRatesTo(TimeUnit rateUnit) {
 			this.rateUnit = rateUnit;
 			return this;
 		}
 
-		public Builder convertDurationsTo(TimeUnit durationUnit)
-		{
+		public Builder convertDurationsTo(TimeUnit durationUnit) {
 			this.durationUnit = durationUnit;
 			return this;
 		}
 
-		public Builder filter(MetricFilter filter)
-		{
+		public Builder filter(MetricFilter filter) {
 			this.filter = filter;
 			return this;
 		}
 
-		public Builder name(String name)
-		{
+		public Builder name(String name) {
 			this.name = name;
 			return this;
 		}
 
-		public Builder hostName(String hostName)
-		{
+		public Builder hostName(String hostName) {
 			this.hostName = hostName;
 			return this;
 		}
 
-		public Builder prefix(String prefix)
-		{
+		public Builder prefix(String prefix) {
 			this.prefix = prefix;
 			return this;
 		}
 
-		public Builder replacePercentSign(String replacePercentSign)
-		{
+		public Builder replacePercentSign(String replacePercentSign) {
 			this.replacePercentSign = replacePercentSign;
 			return this;
 		}
 
-		public ZabbixReporter build(ZabbixSender zabbixSender)
-		{
-			if (this.hostName == null)
-			{
+		public ZabbixReporter build(ZabbixSender zabbixSender) {
+			if (this.hostName == null) {
 				this.hostName = HostUtil.getHostName();
 				ZabbixReporter.logger.info(this.name + " detect hostName: " + this.hostName);
 			}
@@ -114,8 +101,7 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 	}
 
-	private ZabbixReporter(MetricRegistry registry, String replacePercentSign, String name, TimeUnit rateUnit, TimeUnit durationUnit, MetricFilter filter, ZabbixSender zabbixSender, String hostName, String prefix)
-	{
+	private ZabbixReporter(MetricRegistry registry, String replacePercentSign, String name, TimeUnit rateUnit, TimeUnit durationUnit, MetricFilter filter, ZabbixSender zabbixSender, String hostName, String prefix) {
 		super(registry, name, filter, rateUnit, durationUnit);
 		this.replacePercentSign = replacePercentSign;
 		this.zabbixSender = zabbixSender;
@@ -123,27 +109,24 @@ public class ZabbixReporter extends ScheduledReporter
 		this.prefix = prefix;
 	}
 
-	private DataObject toDataObject(String type, String suffix, String key, Object value)
-	{
-		return DataObject.builder().host(this.hostName).key(type + suffix  + "[" + key  + "]").value("" + value).build();
+	private DataObject toDataObject(String type, String suffix, String key, Object value) {
+		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
 
 	/**
 	 * for histograms.
-	 *
-	 * */
+	 */
 
-	private void addSnapshotDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList)
-	{
+	private void addSnapshotDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
 		String type = "histograms";
-		dataObjectList.add(toDataObject(type,  ".min", key,  Long.valueOf(snapshot.getMin())));
+		dataObjectList.add(toDataObject(type, ".min", key, Long.valueOf(snapshot.getMin())));
 		dataObjectList.add(toDataObject(type, ".max", key, Long.valueOf(snapshot.getMax())));
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(snapshot.getMean())));
 		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(snapshot.getStdDev())));
 		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(snapshot.getMedian())));
 		//dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(snapshot.get50thPercentile()))); //Not available at snapshot.java
 		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p95", key,	Double.valueOf(snapshot.get95thPercentile())));
+		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(snapshot.get95thPercentile())));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(snapshot.get99thPercentile())));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
@@ -151,11 +134,9 @@ public class ZabbixReporter extends ScheduledReporter
 
 	/**
 	 * for counters.
-	 *
-	 * */
+	 */
 
-	private void addCountersDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList)
-	{
+	private void addCountersDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
 		String type = "counters";
 		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
 		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
@@ -171,11 +152,9 @@ public class ZabbixReporter extends ScheduledReporter
 
 	/**
 	 * for timers.
-	 *
-	 * */
+	 */
 
-	private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snapshot, List<DataObject> dataObjectList)
-	{
+	private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
 		// output: timers.min[mss.gateway.api.all.requests]
 		// timers.p75[mss.gateway.api.updateUserDevice.requests]
 		String type = "timers";
@@ -209,64 +188,53 @@ public class ZabbixReporter extends ScheduledReporter
 
 	/**
 	 * for meters.
-	 *
-	 * */
+	 */
 
-	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList)
-	{
+	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
 		String type = "meters";
 		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
 		dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
 		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Double.valueOf(convertRate(meter.getOneMinuteRate()))));
 		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(meter.getFiveMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".15-minuteRate",	key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));
+		dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));
 	}
 
-	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers)
-	{
+	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
-		for (Map.Entry<String, Gauge> entry : gauges.entrySet())
-		{
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String)entry.getKey()).value(((Gauge)entry.getValue()).getValue().toString()).build();
+		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
 		}
-		for (Map.Entry<String, Counter> entry : counters.entrySet())
-		{
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String)entry.getKey()).value("" + ((Counter)entry.getValue()).getCount()).build();
+		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 		}
-		for (Map.Entry<String, Histogram> entry : histograms.entrySet())
-		{
-			Histogram histogram = (Histogram)entry.getValue();
+		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
+			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
-			addSnapshotDataObject((String)entry.getKey(), snapshot, dataObjectList);
+			addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
 		}
-		for (Map.Entry<String, Meter> entry : meters.entrySet())
-		{
-			Meter meter = (Meter)entry.getValue();
-			addMeterDataObject((String)entry.getKey(), meter, dataObjectList);
+		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
+			Meter meter = (Meter) entry.getValue();
+			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
 		}
-		for (Map.Entry<String, Timer> entry : timers.entrySet())
-		{
-			Timer timer = (Timer)entry.getValue();
-			addMeterDataObject((String)entry.getKey(), timer, dataObjectList);
-			addSnapshotDataObjectWithConvertDuration((String)entry.getKey(), timer.getSnapshot(), dataObjectList);
+		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
+			Timer timer = (Timer) entry.getValue();
+			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
+			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
 
 			//**Added
 			addCountersDataObject((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
 			//addTimersDataObject((String) entry.getKey(), timer, dataObjectList);
 		}
-		try
-		{
+		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
 			if (!senderResult.success()) {
 				logger.warn("report metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
 			}
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			logger.error("report metris to zabbix error!");
 		}
 	}
