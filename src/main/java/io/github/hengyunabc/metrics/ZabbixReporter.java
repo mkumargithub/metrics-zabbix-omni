@@ -254,7 +254,7 @@ public class ZabbixReporter extends ScheduledReporter
 
 			//**Added
 			addCountersDataObject((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
-			addTimersDataObject((String) entry.getKey(), timer, dataObjectList);
+			//addTimersDataObject((String) entry.getKey(), timer, dataObjectList);
 		}
 		try
 		{
