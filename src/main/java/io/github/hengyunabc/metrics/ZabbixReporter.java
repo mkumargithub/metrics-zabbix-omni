@@ -132,23 +132,6 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
 
-	/**
-	 * for counters.
-	 */
-
-	private void addCountersDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
-		String type = "counters";
-		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
-		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
-		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
-		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
-		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
-	}
 
 	/**
 	 * for timers.
@@ -163,8 +146,8 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
 		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
 		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		dataObjectList.add(toDataObject(type, ".p75", key, (float) convertDuration(snapshot.get75thPercentile())));
-		dataObjectList.add(toDataObject(type, ".p95", key, Float.valueOf((float) convertDuration(snapshot.get95thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf((float) convertDuration(snapshot.get95thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
@@ -173,9 +156,9 @@ public class ZabbixReporter extends ScheduledReporter
 	/**
 	 * for Extra Timers.
 	 *
-	 * */
+	 * *//*
 
-	/*private void addTimersDataObject(String key, Timer timer, List<DataObject> dataObjectList)
+	private void addTimersDataObject(String key, Timer timer, List<DataObject> dataObjectList)
 	{
 		String type = "timers";
 		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(timer.getCount())));
@@ -185,6 +168,23 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".15-minuteRate",	key, Double.valueOf(convertRate(timer.getFifteenMinuteRate()))));
 	}*/
 
+	/**
+	 * for counters.
+	 */
+
+	/*private void addCountersDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
+		String type = "counters";
+		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
+		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
+		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
+		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
+		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
+		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
+	}*/
 
 	/**
 	 * for meters.
@@ -209,6 +209,7 @@ public class ZabbixReporter extends ScheduledReporter
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 		}
+
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
@@ -222,10 +223,6 @@ public class ZabbixReporter extends ScheduledReporter
 			Timer timer = (Timer) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
-
-			//**Added
-			addCountersDataObject((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
-			//addTimersDataObject((String) entry.getKey(), timer, dataObjectList);
 		}
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
