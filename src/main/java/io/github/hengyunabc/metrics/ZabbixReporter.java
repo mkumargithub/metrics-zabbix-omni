@@ -213,7 +213,9 @@ public class ZabbixReporter extends ScheduledReporter
 		}*/
 
 		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-			DataObject dataObject = DataObject.builder().host(this.hostName).key("counters" + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
+			String type ="counters";
+			String suffix = ".count";
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 		}
 
