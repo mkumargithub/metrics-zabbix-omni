@@ -243,4 +243,3 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 	}
 }
-
