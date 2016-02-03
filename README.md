@@ -7,7 +7,6 @@ timers.count[{#APINAME}] --> timers.stddev[mss.gateway.api.all.requests]
 
 # Functionality update:
 
-
 toDataObject
 ```java
 private DataObject toDataObject(String type, String suffix, String key, Object value) {
@@ -32,8 +31,10 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 
 
 # Real example:
+```
 {"clock":1453998878592,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.stddev[mss.gateway.api.all.requests]","value":"0.0"},
 {"clock":1453998878592,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.median[mss.gateway.api.all.requests]","value":"2802.600693"},
 {"clock":1453998878592,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p50[mss.gateway.api.all.requests]","value":"2802.600693"},
 {"clock":1453998878592,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p95[mss.gateway.api.all.requests]","value":"2802.600693"},
 {"clock":1453998878592,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p99[mss.gateway.api.all.requests]","value":"2802.600693"}],"request":"sender data"}'
+```
