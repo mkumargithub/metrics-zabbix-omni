@@ -8,26 +8,27 @@ timers.count[{#APINAME}] --> timers.stddev[mss.gateway.api.all.requests]
 # Functionality update:
 
 
-{code:title=toDataObject}
+toDataObject
+```java
 private DataObject toDataObject(String type, String suffix, String key, Object value) {
 		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
-{code}
+```
 
-{code:title=addSnapshotDataObject}
-
+addSnapshotDataObject
+```java
 private void addSnapshotDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
 		String type = "histograms";
 		dataObjectList.add(toDataObject(type, ".min", key, Long.valueOf(snapshot.getMin())));
 		}
-{code}
-{code:title=addSnapshotDataObjectWithConvertDuration}
-
+```
+addSnapshotDataObjectWithConvertDuration
+```java
 private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
 		String type = "timers";
 		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin())))); 
 		}
-{code}
+```
 
 
 # Real example:
