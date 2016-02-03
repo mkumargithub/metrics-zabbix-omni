@@ -1,4 +1,4 @@
-# metrics-zabbix
+# Metrics-zabbix
 
 Updated zabbixReporter.java file in order to compatible with zabbix key format
 
