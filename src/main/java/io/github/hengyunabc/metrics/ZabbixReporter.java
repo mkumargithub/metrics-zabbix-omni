@@ -1,17 +1,8 @@
 package io.github.hengyunabc.metrics;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Metered;
-import com.codahale.metrics.MetricFilter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.ScheduledReporter;
-import com.codahale.metrics.Snapshot;
-import com.codahale.metrics.Timer;
+
+import io.dropwizard.metrics.*;
 import io.github.hengyunabc.zabbix.sender.DataObject;
-import io.github.hengyunabc.zabbix.sender.DataObject.Builder;
 import io.github.hengyunabc.zabbix.sender.SenderResult;
 import io.github.hengyunabc.zabbix.sender.ZabbixSender;
 import java.io.IOException;
@@ -27,8 +18,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Updated mkumar
  */
-public class ZabbixReporter extends ScheduledReporter
-{
+public class ZabbixReporter extends ScheduledReporter {
 	private static final Logger logger = LoggerFactory.getLogger(ZabbixReporter.class);
 	String replacePercentSign = "";
 	private ZabbixSender zabbixSender;
@@ -38,6 +28,8 @@ public class ZabbixReporter extends ScheduledReporter
 	public static Builder forRegistry(MetricRegistry registry) {
 		return new Builder(registry);
 	}
+
+
 
 	public static class Builder {
 		private String replacePercentSign = "";
@@ -126,9 +118,10 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(snapshot.getMedian())));
 		//dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(snapshot.get50thPercentile()))); //Not available at snapshot.java
 		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(snapshot.get95thPercentile())));
+		dataObjectList.add(toDataObject(type, ".p90", key, Double.valueOf(convertDuration(snapshot.get90thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(snapshot.get99thPercentile())));
+		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
 
@@ -147,44 +140,13 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
 		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
 		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf((float) convertDuration(snapshot.get95thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p90", key, Double.valueOf(convertDuration(snapshot.get90thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
 
-	/**
-	 * for Extra Timers.
-	 *
-	 * *//*
-
-	private void addTimersDataObject(String key, Timer timer, List<DataObject> dataObjectList)
-	{
-		String type = "timers";
-		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(timer.getCount())));
-		dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(timer.getMeanRate()))));
-		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Float.valueOf((float) convertRate(timer.getOneMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(timer.getFiveMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".15-minuteRate",	key, Double.valueOf(convertRate(timer.getFifteenMinuteRate()))));
-	}*/
-
-	/**
-	 * for counters.
-	 */
-
-	/*private void addCountersDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
-		String type = "counters";
-		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
-		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
-		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
-		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
-		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
-	}*/
 
 	/**
 	 * for meters.
@@ -199,39 +161,35 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));
 	}
 
-	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
+	@Override
+	public void report(SortedMap<MetricName, Gauge> gauges, SortedMap<MetricName, Counter> counters, SortedMap<MetricName, Histogram> histograms, SortedMap<MetricName, Meter> meters, SortedMap<MetricName, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
-		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
+		for (Map.Entry<MetricName, Gauge> entry : gauges.entrySet()) {
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + entry.getKey().getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
 		}
-
-
-		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
-			dataObjectList.add(dataObject);
-		}*/
-
-		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
+		for (Map.Entry<MetricName, Counter> entry : counters.entrySet()) {
 			String type ="counters";
 			String suffix = ".count";
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + entry.getKey().getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 		}
-
-		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
+		for (Map.Entry<MetricName, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
-			addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
+			addSnapshotDataObject(entry.getKey().getKey(), snapshot, dataObjectList);
 		}
-		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
+		for (Map.Entry<MetricName, Meter> entry : meters.entrySet()) {
 			Meter meter = (Meter) entry.getValue();
-			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
+			addMeterDataObject(entry.getKey().getKey(), meter, dataObjectList);
 		}
-		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
+		for (Map.Entry<MetricName, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
-			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
-			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
+			addMeterDataObject(entry.getKey().getKey(), timer, dataObjectList);
+			addSnapshotDataObjectWithConvertDuration(entry.getKey().getKey(), timer.getSnapshot(), dataObjectList);
+
+			//**added for timer count
+			/*addTimersDataObject((String) entry.getKey(), timer, dataObjectList);*/
 		}
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
