@@ -28,7 +28,11 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin())))); 
 		}
 ```
-
+report: String changed as MetricName
+```java
+public void report(SortedMap<MetricName, Gauge> gauges, SortedMap<MetricName, Counter> counters, SortedMap<MetricName, Histogram> histograms, SortedMap<MetricName, Meter> meters, SortedMap<MetricName, Timer> timers) {
+		List<DataObject> dataObjectList = new LinkedList();
+```
 
 # Real example:
 ```
