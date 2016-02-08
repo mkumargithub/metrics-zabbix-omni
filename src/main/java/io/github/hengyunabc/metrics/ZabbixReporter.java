@@ -11,7 +11,6 @@ import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import io.github.hengyunabc.zabbix.sender.DataObject;
-import io.github.hengyunabc.zabbix.sender.DataObject.Builder;
 import io.github.hengyunabc.zabbix.sender.SenderResult;
 import io.github.hengyunabc.zabbix.sender.ZabbixSender;
 import java.io.IOException;
