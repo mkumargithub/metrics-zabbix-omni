@@ -26,11 +26,11 @@
 			<version>0.0.1-OMNIFONE</version>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>com.codahale.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
 			<version>3.1.2-OMNIFONE</version>
-		</dependency>
+		</dependency>-->
 
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
