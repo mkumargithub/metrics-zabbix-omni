@@ -13,12 +13,12 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
+
 	<parent>
 		<groupId>com.omnifone.platform.maven.release</groupId>
 		<artifactId>release-parent</artifactId>
 		<version>1.0.1</version>
 	</parent>
-
 	<dependencies>
 		<dependency>
 			<groupId>io.github.hengyunabc</groupId>
@@ -41,8 +41,7 @@
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-jvm</artifactId>
-			<version>3.1.2</version>
-			<scope>test</scope>
+			<version>3.1.2-OMNIFONE</version>
 		</dependency>
 
 		<dependency>
