@@ -125,7 +125,7 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(snapshot.getMedian())));
 		//dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(snapshot.get50thPercentile()))); //Not available at snapshot.java
 		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p90", key, Double.valueOf(convertDuration(snapshot.get90thPercentile()))));
+		//dataObjectList.add(toDataObject(type, ".p90", key, Double.valueOf(convertDuration(snapshot.get90thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
@@ -147,44 +147,12 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
 		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
 		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p90", key, Double.valueOf(convertDuration(snapshot.get90thPercentile()))));
+		//dataObjectList.add(toDataObject(type, ".p90", key, Double.valueOf(convertDuration(snapshot.get90thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
-
-	/**
-	 * for Extra Timers.
-	 *
-	 * *//*
-	private void addTimersDataObject(String key, Timer timer, List<DataObject> dataObjectList)
-	{
-		String type = "timers";
-		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(timer.getCount())));
-		dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(timer.getMeanRate()))));
-		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Float.valueOf((float) convertRate(timer.getOneMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(timer.getFiveMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".15-minuteRate",	key, Double.valueOf(convertRate(timer.getFifteenMinuteRate()))));
-	}*/
-
-	/**
-	 * for counters.
-	 */
-
-	/*private void addCountersDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
-		String type = "counters";
-		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
-		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
-		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
-		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
-		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
-	}*/
 
 	/**
 	 * for meters.
