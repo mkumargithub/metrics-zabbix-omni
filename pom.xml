@@ -19,13 +19,14 @@
 		<artifactId>release-parent</artifactId>
 		<version>1.0.1</version>
 	</parent>
-	<dependencies>
-		<dependency>
-			<groupId>oi.hengyunabc</groupId>
-			<artifactId>zabbix-sender</artifactId>
-			<version>0.0.1-OMNIFONETest</version>
-		</dependency>
 
+	<dependencies>
+
+		<dependency>
+			<groupId>io.github.hengyunabc</groupId>
+			<artifactId>zabbix-sender</artifactId>
+			<version>0.0.1-OMNIFONE</version>
+		</dependency>
 		<!--<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
