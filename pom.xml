@@ -21,9 +21,9 @@
 	</parent>
 	<dependencies>
 		<dependency>
-			<groupId>io.github.hengyunabc</groupId>
+			<groupId>oi.hengyunabc</groupId>
 			<artifactId>zabbix-sender</artifactId>
-			<version>0.0.1-OMNIFONE</version>
+			<version>0.0.1-OMNIFONETest</version>
 		</dependency>
 
 		<!--<dependency>
