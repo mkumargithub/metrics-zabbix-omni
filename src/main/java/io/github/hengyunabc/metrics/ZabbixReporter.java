@@ -153,8 +153,8 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
 
-	private void discoverAPIsList(List<String> key, List<DataObject> dataObjectLists) {
-		dataObjectLists.add(toDataObjects(key));
+	private void discoverAPIsList(List<String> key) {
+		key.add(String.valueOf(toDataObjects(key)));
 	}
 
 
@@ -218,7 +218,7 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
-			discoverAPIsList(keys, dataObjectList);
+			discoverAPIsList(keys);
 		}
 
 		/*for (Map.Entry<String, Timer> entry : timers.entrySet()) {
@@ -238,6 +238,4 @@ public class ZabbixReporter extends ScheduledReporter
 			logger.error("report metris to zabbix error!");
 		}
 	}
-
-
 }
