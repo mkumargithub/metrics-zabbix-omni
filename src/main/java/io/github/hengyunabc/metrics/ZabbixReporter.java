@@ -117,7 +117,7 @@ public class ZabbixReporter extends ScheduledReporter
 	 * for histograms.
 	 */
 
-	private void addSnapshotDataObject(String key, List<DataObject> dataObjectList) {
+	/*private void addSnapshotDataObject(String key, List<DataObject> dataObjectList) {
 		String type = "histograms";
 		dataObjectList.add(toDataObject(type, ".min", key));
 		dataObjectList.add(toDataObject(type, ".max", key));
@@ -131,13 +131,13 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".p98", key));
 		dataObjectList.add(toDataObject(type, ".p99", key));
 		dataObjectList.add(toDataObject(type, ".p999", key));
-	}
+	}*/
 
 
 	/**
 	 * for timers.
 	 */
-	private void addSnapshotDataObjectWithConvertDuration(String key,List<DataObject> dataObjectList) {
+	/*private void addSnapshotDataObjectWithConvertDuration(String key,List<DataObject> dataObjectList) {
 		// output: timers.min[mss.gateway.api.all.requests]
 		// timers.p75[mss.gateway.api.updateUserDevice.requests]
 		String type = "timers";
@@ -152,11 +152,10 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".p98", key));
 		dataObjectList.add(toDataObject(type, ".p99", key));
 		dataObjectList.add(toDataObject(type, ".p999", key));
-	}
+	}*/
 
 	private void discoverAPIsList(List<String> key) {
 		key.add(String.valueOf(toDataObjects(key)));
-		logger.info("****Keys: "+key);
 	}
 
 
@@ -164,7 +163,7 @@ public class ZabbixReporter extends ScheduledReporter
 	 * for meters.
 	 */
 
-	private void addMeterDataObject(String key,List<DataObject> dataObjectList) {
+	/*private void addMeterDataObject(String key,List<DataObject> dataObjectList) {
 		String type = "meters";
 		dataObjectList.add(toDataObject(type, ".count", key));
 		dataObjectList.add(toDataObject(type, ".meanRate", key));
@@ -172,20 +171,20 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".5-minuteRate", key));
 		dataObjectList.add(toDataObject(type, ".15-minuteRate", key));
 	}
-
-	private void addMeterDataObjects(DataObject dataObjectList) {
+*/
+	/*private void addMeterDataObjects(DataObject dataObjectList) {
 		String type = "meters";
 		dataObjectList.getValue();
-	}
+	}*/
 
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		//List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
-		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
+		/*for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			//dataObjectList.add(dataObject);
 			keys.add(dataObject.getKey());
-		}
+		}*/
 
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
@@ -193,20 +192,20 @@ public class ZabbixReporter extends ScheduledReporter
 			dataObjectList.add(dataObject);
 		}*/
 
-		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
+		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			String type ="counters";
 			String suffix = ".count";
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
 			//dataObjectList.add(dataObject);
 			keys.add(dataObject.getKey());
-		}
+		}*/
 
-		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
+		/*for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
 			//addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
 			keys.add(entry.getKey());
-		}
+		}*/
 		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
 			Meter meter = (Meter) entry.getValue();
 			//addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
