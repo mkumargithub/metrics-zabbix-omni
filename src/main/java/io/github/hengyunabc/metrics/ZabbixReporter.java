@@ -106,7 +106,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder builder = new StringBuilder();
 		for (String key : keys) {
-			builder.append(key).append(",");
+			builder.append(key).append("&&");
 		}
 		builder.deleteCharAt(builder.length() - 1);
 		return DataObject.builder().key(builder.toString()).build();
