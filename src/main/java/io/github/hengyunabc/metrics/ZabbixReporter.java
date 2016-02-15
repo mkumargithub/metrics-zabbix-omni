@@ -109,7 +109,7 @@ public class ZabbixReporter extends ScheduledReporter
 			builder.append(key).append(",");
 		}
 		builder.deleteCharAt(builder.length() - 1);
-		return DataObject.builder().key("ZabbixDiscovery").value(builder.toString()).build();
+		return DataObject.builder().key("dropwizard.lld.key").value(builder.toString()).build();
 	}
 
 	/**
