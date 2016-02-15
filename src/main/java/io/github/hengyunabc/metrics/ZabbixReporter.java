@@ -106,11 +106,18 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder builder = new StringBuilder();
 		for (String key : keys) {
-			builder.append(key).append(",");
+			builder.append(key).append(",\"{#APINAME}\":");
 		}
 		builder.deleteCharAt(builder.length() - 1);
 		return DataObject.builder().key("dropwizard.lld.key").value(builder.toString()).build();
 	}
+
+
+	private void discoverAPIsList(List<String> key) {
+		key.add(String.valueOf(toDataObjects(key)));
+		logger.info("^^^Keys: "+key);
+	}
+
 
 	/**
 	 * for histograms.
@@ -136,8 +143,6 @@ public class ZabbixReporter extends ScheduledReporter
 	 * for timers.
 	 */
 	private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
-		// output: timers.min[mss.gateway.api.all.requests]
-		// timers.p75[mss.gateway.api.updateUserDevice.requests]
 		String type = "timers";
 		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
 		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
@@ -152,17 +157,9 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
 
-	private void discoverAPIsList(List<String> key) {
-
-		key.add(String.valueOf(toDataObjects(key)));
-		logger.info("^^^Keys: "+key);
-	}
-
-
 	/**
 	 * for meters.
 	 */
-
 	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
 		String type = "meters";
 		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
@@ -172,11 +169,10 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));
 	}
 
-	private void addMeterDataObjects(DataObject dataObjectList) {
-		String type = "meters";
-		dataObjectList.getValue();
-	}
-
+	/**
+	 *
+	 * reporter
+	 */
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
@@ -184,8 +180,9 @@ public class ZabbixReporter extends ScheduledReporter
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
 			keys.add(dataObject.getKey());
+			discoverAPIsList(keys);
+			logger.info("555-Gauge-Keys" + keys);
 		}
-
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
@@ -198,6 +195,8 @@ public class ZabbixReporter extends ScheduledReporter
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 			keys.add(dataObject.getKey());
+			discoverAPIsList(keys);
+			logger.info("444-Counters-Keys" + keys);
 		}
 
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
@@ -205,27 +204,29 @@ public class ZabbixReporter extends ScheduledReporter
 			Snapshot snapshot = histogram.getSnapshot();
 			addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
 			keys.add(entry.getKey());
+			discoverAPIsList(keys);
+			logger.info("333-histogram-Keys" + keys);
 		}
+
 		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
 			Meter meter = (Meter) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
 			keys.add(entry.getKey());
+			discoverAPIsList(keys);
+			logger.info("222-Meter-Keys" + keys);
 		}
+
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(),  dataObjectList);
 			keys.add(entry.getKey());
-		}
-
-		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			discoverAPIsList(keys);
+			logger.info("1111-Timer-Keys" + keys);
 		}
-
-		/*for (Map.Entry<String, Timer> entry : timers.entrySet()) {
-			Timer timer = (Timer) entry.getValue();
-			addMeterDataObject((DataObject) dataObjectList);
-			addSnapshotDataObjectWithConvertDuration((DataObject) dataObjectList);
+/*
+		for (Map.Entry<String, Timer> entry : timers.entrySet() ) {
+			discoverAPIsList(keys);
 		}*/
 
 		try {
