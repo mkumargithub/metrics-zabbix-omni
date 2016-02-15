@@ -155,7 +155,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private void discoverAPIsList(List<String> key) {
 
 		key.add(String.valueOf(toDataObjects(key)));
-		logger.info("Keys: "+key);
+		logger.info("^^^Keys: "+key);
 	}
 
 
