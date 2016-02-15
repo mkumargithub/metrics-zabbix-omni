@@ -17,8 +17,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Updated mkumar
  */
-public class ZabbixReporter extends ScheduledReporter
-{
+public class ZabbixReporter extends ScheduledReporter {
 	private static final Logger logger = LoggerFactory.getLogger(ZabbixReporter.class);
 	String replacePercentSign = "";
 	private ZabbixSender zabbixSender;
@@ -137,7 +136,7 @@ public class ZabbixReporter extends ScheduledReporter
 	/**
 	 * for timers.
 	 */
-	private void addSnapshotDataObjectWithConvertDuration(String key,List<DataObject> dataObjectList) {
+	private void addSnapshotDataObjectWithConvertDuration(String key, List<DataObject> dataObjectList) {
 		// output: timers.min[mss.gateway.api.all.requests]
 		// timers.p75[mss.gateway.api.updateUserDevice.requests]
 		String type = "timers";
@@ -156,7 +155,7 @@ public class ZabbixReporter extends ScheduledReporter
 
 	private void discoverAPIsList(List<String> key) {
 		key.add(String.valueOf(toDataObjects(key)));
-		logger.info("####Keys: "+key);
+		logger.info("####Keys: " + key);
 	}
 
 
@@ -164,7 +163,7 @@ public class ZabbixReporter extends ScheduledReporter
 	 * for meters.
 	 */
 
-	private void addMeterDataObject(String key,List<DataObject> dataObjectList) {
+	private void addMeterDataObject(String key, List<DataObject> dataObjectList) {
 		String type = "meters";
 		dataObjectList.add(toDataObject(type, ".count", key));
 		dataObjectList.add(toDataObject(type, ".meanRate", key));
@@ -194,7 +193,7 @@ public class ZabbixReporter extends ScheduledReporter
 		}*/
 
 		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-			String type ="counters";
+			String type = "counters";
 			String suffix = ".count";
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
 			//dataObjectList.add(dataObject);
@@ -241,3 +240,4 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 	}
 }
+
