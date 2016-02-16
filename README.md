@@ -29,13 +29,6 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 		}
 ```
 
-report: String changed as MetricName
-```java
-public void report(SortedMap<MetricName, Gauge> gauges, SortedMap<MetricName, Counter> counters, SortedMap<MetricName, Histogram> histograms, SortedMap<MetricName, Meter> meters, SortedMap<MetricName, Timer> timers) {
-		List<DataObject> dataObjectList = new LinkedList();
-```
-
-
 report: keys added 
 SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 ```java
