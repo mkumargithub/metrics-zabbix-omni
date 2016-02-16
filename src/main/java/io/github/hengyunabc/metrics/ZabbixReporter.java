@@ -11,7 +11,6 @@ import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import io.github.hengyunabc.zabbix.sender.DataObject;
-import io.github.hengyunabc.zabbix.sender.DataObject.Builder;
 import io.github.hengyunabc.zabbix.sender.SenderResult;
 import io.github.hengyunabc.zabbix.sender.ZabbixSender;
 import java.io.IOException;
@@ -113,20 +112,19 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
 
-
+	/**
+	 *
+	 * APIs List for zabbix lld
+	 *
+	 */
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder builder = new StringBuilder();
 		for (String key : keys) {
-			builder.append("\"{APINAME}\":\"").append(key).append("\",");
-			logger.info("$$$Keys: "+key);
+			builder.append("\"{#APINAME}\":\"").append(key).append("\",");
+			logger.debug("AllAPIsKeys: " +key);
 		}
 		builder.deleteCharAt(builder.length() - 1);
 		return DataObject.builder().key("dropwizard.lld.key").value(builder.toString()).build();
-	}
-
-	private void discoverAPIsList(List<String> key) {
-		key.add(String.valueOf(toDataObjects(key)));
-		logger.info("^^^Keys: "+key);
 	}
 
 	/**
@@ -191,7 +189,6 @@ public class ZabbixReporter extends ScheduledReporter
 			keys.add(dataObject.getKey());
 		}
 
-
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
@@ -201,8 +198,10 @@ public class ZabbixReporter extends ScheduledReporter
 			String type ="counters";
 			String suffix = ".count";
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
+			// apidataObject for APIs list without type and suffix
+			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
-			keys.add(dataObject.getKey());
+			keys.add(apidataObject.getKey());
 
 		}
 
@@ -223,30 +222,17 @@ public class ZabbixReporter extends ScheduledReporter
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
 			keys.add(entry.getKey());
 		}
-		/*for (Map.Entry<String, Timer> entry : timers.entrySet() ) {
-			discoverAPIsList(keys);
-		}*/
-		/*try {
-			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			if (!senderResult.success()) {
-				logger.warn("report metrics to zabbix not success!" + senderResult);
-			} else if (logger.isDebugEnabled()) {
-				logger.info("report metrics to zabbix success. " + senderResult);
-			}
-		} catch (IOException e) {
-			logger.error("report metris to zabbix error!");
-		}*/
 
 		try {
 			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			if (!senderAPIsResult.success()&& !!senderResult.success()) {
-				logger.warn("report APIs List to zabbix not success!" + senderResult);
+			if (!senderAPIsResult.success() && !!senderResult.success()) {
+				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
-				logger.info("report APIs List to zabbix success. " + senderResult);
+				logger.info("report APIs List & metrics to zabbix success. " + senderResult);
 			}
 		} catch (IOException e) {
-			logger.error("report APIs List to zabbix error!");
+			logger.error("report APIs List & metrics to zabbix error!");
 		}
 	}
 }
