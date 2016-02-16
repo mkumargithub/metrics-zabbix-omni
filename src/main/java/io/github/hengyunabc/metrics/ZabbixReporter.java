@@ -117,7 +117,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder builder = new StringBuilder();
 		for (String key : keys) {
-			builder.append(key).append(",\"{#APINAME}\":");
+			builder.append(key).append(",\"{###APINAME}\":");
 		}
 		builder.deleteCharAt(builder.length() - 1);
 		return DataObject.builder().key("dropwizard.lld.key").value(builder.toString()).build();
@@ -138,8 +138,8 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".max", key, Long.valueOf(snapshot.getMax())));
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(snapshot.getMean())));
 		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(snapshot.getStdDev())));
+		//median is a p50
 		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(snapshot.getMedian())));
-		//dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(snapshot.get50thPercentile()))); //Not available at snapshot.java
 		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(snapshot.get95thPercentile())));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
@@ -237,7 +237,7 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 
 		try {
-			SenderResult senderResult = this.zabbixSender.send((DataObject) keys);
+			SenderResult senderResult = this.zabbixSender.send((DataObject)keys);
 			if (!senderResult.success()) {
 				logger.warn("report metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
