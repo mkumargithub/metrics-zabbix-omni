@@ -238,8 +238,9 @@ public class ZabbixReporter extends ScheduledReporter
 		}*/
 
 		try {
-			SenderResult senderResult = this.zabbixSender.send(toDataObjects(keys));
-			if (!senderResult.success()) {
+			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
+			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
+			if (!senderAPIsResult.success()&& !!senderResult.success()) {
 				logger.warn("report APIs List to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report APIs List to zabbix success. " + senderResult);
