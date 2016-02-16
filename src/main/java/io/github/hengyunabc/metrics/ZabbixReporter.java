@@ -236,7 +236,7 @@ public class ZabbixReporter extends ScheduledReporter
 			logger.error("report metris to zabbix error!");
 		}
 
-		/*try {
+		try {
 			SenderResult senderResult = this.zabbixSender.send((DataObject)keys);
 			if (!senderResult.success()) {
 				logger.warn("report metrics to zabbix not success!" + senderResult);
@@ -245,6 +245,6 @@ public class ZabbixReporter extends ScheduledReporter
 			}
 		} catch (IOException e) {
 			logger.error("report metris to zabbix error!");
-		}*/
+		}
 	}
 }
