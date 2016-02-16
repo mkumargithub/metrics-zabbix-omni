@@ -118,6 +118,7 @@ public class ZabbixReporter extends ScheduledReporter
 		StringBuilder builder = new StringBuilder();
 		for (String key : keys) {
 			builder.append("\"{APINAME}\":\"").append(key).append("\",");
+			logger.info("$$$Keys: "+key);
 		}
 		builder.deleteCharAt(builder.length() - 1);
 		return DataObject.builder().key("dropwizard.lld.key").value(builder.toString()).build();
@@ -225,7 +226,7 @@ public class ZabbixReporter extends ScheduledReporter
 		/*for (Map.Entry<String, Timer> entry : timers.entrySet() ) {
 			discoverAPIsList(keys);
 		}*/
-		try {
+		/*try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
 			if (!senderResult.success()) {
 				logger.warn("report metrics to zabbix not success!" + senderResult);
@@ -234,10 +235,9 @@ public class ZabbixReporter extends ScheduledReporter
 			}
 		} catch (IOException e) {
 			logger.error("report metris to zabbix error!");
-		}
+		}*/
 
 		try {
-
 			SenderResult senderResult = this.zabbixSender.send(toDataObjects(keys));
 			if (!senderResult.success()) {
 				logger.warn("report APIs List to zabbix not success!" + senderResult);
