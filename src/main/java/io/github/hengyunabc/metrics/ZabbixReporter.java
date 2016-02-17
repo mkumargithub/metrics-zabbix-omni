@@ -124,7 +124,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//logger.debug("AllAPIsKeys: " + key);
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value(stringBuilder.toString()).build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\n\"data\":[\n").value(stringBuilder.toString()).value("\n ]\n}\"").build();
 	}
 
 	/**
