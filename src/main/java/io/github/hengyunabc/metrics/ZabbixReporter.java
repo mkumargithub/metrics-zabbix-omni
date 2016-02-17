@@ -120,8 +120,8 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder builder = new StringBuilder();
 		for (String key : keys) {
-			builder.append("\"{#APINAME}\":\"").append(key).append("\",");
-			logger.debug("AllAPIsKeys: " + key);
+			builder.append("{\"{#APINAME}\":\"").append(key).append("\"},");
+			//logger.debug("AllAPIsKeys: " + key);
 		}
 		builder.deleteCharAt(builder.length() - 1);
 		return DataObject.builder().key("dropwizard.lld.key").value(builder.toString()).build();
