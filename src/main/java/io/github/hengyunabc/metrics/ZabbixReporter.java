@@ -231,7 +231,7 @@ public class ZabbixReporter extends ScheduledReporter
 			Meter meter = (Meter) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
 			//keys.add(entry.getKey());
-			metersKeys.add(entry.getKey());
+			metersKeys.add("**front["+entry.getKey()+"]back***");
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
