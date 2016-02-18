@@ -124,7 +124,22 @@ public class ZabbixReporter extends ScheduledReporter
 			//logger.debug("AllAPIsKeys: " + key);
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\n\"data\":[\n").value(stringBuilder.toString()).value("\n ]\n}\"").build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value(stringBuilder.toString()).build();
+	}
+
+	/**
+	 *
+	 * APIs List for zabbix lld
+	 *
+	 */
+	private DataObject metersDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
+			//logger.debug("AllAPIsKeys: " + key);
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[meters]").value(stringBuilder.toString()).build();
 	}
 
 	/**
@@ -183,6 +198,7 @@ public class ZabbixReporter extends ScheduledReporter
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
+		List<String> metersKeys = new LinkedList();
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
@@ -214,7 +230,8 @@ public class ZabbixReporter extends ScheduledReporter
 		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
 			Meter meter = (Meter) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
-			keys.add(entry.getKey());
+			//keys.add(entry.getKey());
+			metersKeys.add(entry.getKey());
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
@@ -225,11 +242,14 @@ public class ZabbixReporter extends ScheduledReporter
 
 		try {
 			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
+			SenderResult metersAPIsResult = this.zabbixSender.send(metersDataObjects(metersKeys));
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			if (!senderAPIsResult.success() && !!senderResult.success()) {
+			if (!senderAPIsResult.success() && !!senderResult.success() && !metersAPIsResult.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
-				logger.info("report APIs List & metrics to zabbix success. " + senderResult);
+				logger.info("report metrics to zabbix success. " + senderResult);
+				logger.info("report APIs List to zabbix success. " + senderAPIsResult);
+				logger.info("report meters APIs List to zabbix success. " + metersAPIsResult);
 			}
 		} catch (IOException e) {
 			logger.error("report APIs List & metrics to zabbix error!");
