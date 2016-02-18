@@ -139,7 +139,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//logger.debug("AllAPIsKeys: " + key);
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[meters]").value(stringBuilder.toString()).build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[meters]").value("front%%["+stringBuilder.toString()+"]%%back").build();
 	}
 
 	/**
@@ -231,7 +231,7 @@ public class ZabbixReporter extends ScheduledReporter
 			Meter meter = (Meter) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
 			//keys.add(entry.getKey());
-			metersKeys.add("**front["+entry.getKey()+"]back***");
+			metersKeys.add(entry.getKey());
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
