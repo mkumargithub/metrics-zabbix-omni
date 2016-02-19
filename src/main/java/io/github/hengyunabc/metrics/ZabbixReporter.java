@@ -129,7 +129,8 @@ public class ZabbixReporter extends ScheduledReporter
 
 	/**
 	 *
-	 * APIs List for zabbix lld
+	 * Meters APIs List for zabbix lld/discovery
+	 * need to call key (dropwizard.lld.key[meters]) into zabbix discovery rules.
 	 *
 	 */
 	private DataObject metersDataObjects(List<String> keys) {
@@ -139,7 +140,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//logger.debug("AllAPIsKeys: " + key);
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[meters]").value("{\n\"data\":[" + stringBuilder.toString()).build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[meters]").value("{\n\"data\":[" + stringBuilder.toString() + "\n]\n}").build();
 	}
 
 	/**
