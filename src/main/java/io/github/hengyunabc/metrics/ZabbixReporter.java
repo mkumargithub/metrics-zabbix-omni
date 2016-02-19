@@ -113,9 +113,7 @@ public class ZabbixReporter extends ScheduledReporter
 	}
 
 	/**
-	 *
-	 * APIs List for zabbix lld
-	 *
+	 * Other APIs List for zabbix lld
 	 */
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
@@ -124,23 +122,65 @@ public class ZabbixReporter extends ScheduledReporter
 			//logger.debug("AllAPIsKeys: " + key);
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value(stringBuilder.toString()).build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[others]").value("{\n\"data\":[" + stringBuilder.toString() +"]\n}").build();
 	}
 
 	/**
-	 *
-	 * APIs List for zabbix lld
-	 *
+	 * Histograms APIs List for zabbix lld
+	 * in zabbix discovery you need to pass the key as dropwizard.lld.key[histograms] and create a item prototype like histograms.min[{#APINAME}] and this will work.
+	 */
+	private DataObject histogramsDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
+			//logger.debug("CountersAPIsKeys: " + key);
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[histograms]").value("{\n\"data\":[" + stringBuilder.toString() +"]\n}").build();
+	}
+
+	/**
+	 * Counters APIs List for zabbix lld
+	 * in zabbix discovery you need to pass the key as dropwizard.lld.key[counters] and create a item prototype like counters.min[{#APINAME}] and this will work.
+	 */
+	private DataObject countersDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
+			//logger.debug("CountersAPIsKeys: " + key);
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[counters]").value("{\n\"data\":[" + stringBuilder.toString() +"]\n}").build();
+	}
+
+	/**
+	 * Meters APIs List for zabbix lld
+	 * in zabbix discovery you need to pass the key as dropwizard.lld.key[meters] and create a item prototype like meters.count[{#APINAME}] and this will work.
 	 */
 	private DataObject metersDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
 			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
-			//logger.debug("AllAPIsKeys: " + key);
+			//logger.debug("MetersAPIsKeys: " + key);
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[meters]").value("{\n\"data\":[" + stringBuilder.toString() +"]\n}").build();
 	}
+
+	/**
+	 * Timers APIs List for zabbix lld
+	 * in zabbix discovery you need to pass the key as dropwizard.lld.key[timers] and create a item prototype like timers.count[{#APINAME}] and this will work.
+	 */
+	private DataObject timersDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
+			//logger.debug("TimersAPIsKeys: " + key);
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key[timers]").value("{\n\"data\":[" + stringBuilder.toString() +"]\n}").build();
+	}
+
 
 	/**
 	 * for histograms.
@@ -198,7 +238,10 @@ public class ZabbixReporter extends ScheduledReporter
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
+		List<String> histogramsKeys = new LinkedList();
+		List<String> countersKeys = new LinkedList();
 		List<String> metersKeys = new LinkedList();
+		List<String> timersKeys = new LinkedList();
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
@@ -217,7 +260,7 @@ public class ZabbixReporter extends ScheduledReporter
 			// apidataObject for APIs list without type and suffix
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
+			countersKeys.add(apidataObject.getKey());
 
 		}
 
@@ -225,31 +268,35 @@ public class ZabbixReporter extends ScheduledReporter
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
 			addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
-			keys.add(entry.getKey());
+			histogramsKeys.add(entry.getKey());
 		}
 		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
 			Meter meter = (Meter) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
-			//keys.add(entry.getKey());
 			metersKeys.add(entry.getKey());
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
-			keys.add(entry.getKey());
+			timersKeys.add(entry.getKey());
 		}
 
 		try {
 			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
+			SenderResult histogramsAPIsResult = this.zabbixSender.send(histogramsDataObjects(histogramsKeys));
+			SenderResult countersAPIsResult = this.zabbixSender.send(countersDataObjects(countersKeys));
 			SenderResult metersAPIsResult = this.zabbixSender.send(metersDataObjects(metersKeys));
+			SenderResult timersAPIsResult = this.zabbixSender.send(timersDataObjects(timersKeys));
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			if (!senderAPIsResult.success() && !!senderResult.success() && !metersAPIsResult.success()) {
+			if (!senderAPIsResult.success() && !!senderResult.success() && !histogramsAPIsResult.success() && !countersAPIsResult.success() && !metersAPIsResult.success() && !timersAPIsResult.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
 				logger.info("report APIs List to zabbix success. " + senderAPIsResult);
-				logger.info("report meters APIs List to zabbix success. " + metersAPIsResult);
+				logger.info("report Counters APIs List to zabbix success. " + countersAPIsResult);
+				logger.info("report Meters APIs List to zabbix success. " + metersAPIsResult);
+				logger.info("report Timers APIs List to zabbix success. " + timersAPIsResult);
 			}
 		} catch (IOException e) {
 			logger.error("report APIs List & metrics to zabbix error!");
