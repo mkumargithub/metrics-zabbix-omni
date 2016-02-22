@@ -1,5 +1,6 @@
 package io.github.hengyunabc.metrics;
 
+import com.alibaba.fastjson.JSON;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
@@ -122,7 +123,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//logger.debug("AllAPIsKeys: " + key);
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\n\"data\":[" + stringBuilder.toString() +"]}").build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
 	/**
@@ -287,19 +288,20 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 
 		try {
-			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
+
 			//SenderResult histogramsAPIsResult = this.zabbixSender.send(histogramsDataObjects(histogramsKeys));
 			//SenderResult countersAPIsResult = this.zabbixSender.send(countersDataObjects(countersKeys));
 			//SenderResult metersAPIsResult = this.zabbixSender.send(metersDataObjects(metersKeys));
 			//SenderResult timersAPIsResult = this.zabbixSender.send(timersDataObjects(timersKeys));
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
+			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 			//if (!senderAPIsResult.success() && !!senderResult.success() && !histogramsAPIsResult.success() && !countersAPIsResult.success() && !metersAPIsResult.success() && !timersAPIsResult.success()) {
-			if (!senderAPIsResult.success() && !!senderResult.success()) {
+			if ( !!senderResult.success() && !!senderAPIsResult.success()) {
 
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
-				logger.info("report APIs List to zabbix success. " + senderAPIsResult);
+				//logger.info("report APIs List to zabbix success. " + senderAPIsResult);
 				//logger.info("report Counters APIs List to zabbix success. " + countersAPIsResult);
 				//logger.info("report Meters APIs List to zabbix success. " + metersAPIsResult);
 				//logger.info("report Timers APIs List to zabbix success. " + timersAPIsResult);
