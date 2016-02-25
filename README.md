@@ -29,17 +29,34 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 		}
 ```
 
+addMeterDataObject
+```java
+private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
+		String type = "meters";
+		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
+		}
+```
+
 report: keys added 
 SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 ```java
 public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
+
+
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
+			String type ="gauge";
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + "[" + (String) entry.getKey() + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
+			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
-			keys.add(dataObject.getKey());
+			keys.add(apidataObject.getKey());
 		}
+
+		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
+			dataObjectList.add(dataObject);
+		}*/
 
 		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			String type ="counters";
@@ -51,7 +68,6 @@ public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> c
 			keys.add(apidataObject.getKey());
 
 		}
-
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
@@ -71,38 +87,38 @@ public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> c
 		}
 
 		try {
-			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			if (!senderAPIsResult.success() && !!senderResult.success()) {
+			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
+			if ( !!senderResult.success() && !!senderAPIsResult.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
-				logger.info("report APIs List & metrics to zabbix success. " + senderResult);
+				logger.info("report metrics to zabbix success. " + senderResult);
 			}
 		} catch (IOException e) {
 			logger.error("report APIs List & metrics to zabbix error!");
 		}
 ```
 
-toDataObjects created to list out all APIs
+toDataObjects method created to list out all APIs
 ```java
 private DataObject toDataObjects(List<String> keys) {
-		StringBuilder builder = new StringBuilder();
+		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			builder.append("\"{#APINAME}\":\"").append(key).append("\",");
-			logger.debug("AllAPIsKeys: " +key);
+			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
+			//logger.debug("AllAPIsKeys: " + key);
 		}
-		builder.deleteCharAt(builder.length() - 1);
-		return DataObject.builder().key("dropwizard.lld.key").value(builder.toString()).build();
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 ```
 
 # Real example: 
 For APIs List
 ```
-3415 : 20160216 : 141919.987 trapper got '{"clock":1455632359983,"data":[{"clock":1455632359983,"key":"dropwizard.lld.key","value":"\"{#APINAME}\":\"jvm.fd.usage\",\"{#APINAME}\":\"jvm.gc.ConcurrentMarkSweep.count\",\"{#APINAME}\":\"jvm.gc.ConcurrentMarkSweep.time\",\"{#APINAME}\":\"jvm.gc.ParNew.count\",\"{#APINAME}\":\"jvm.gc.ParNew.time\",\"{#APINAME}\":\"jvm.memory.heap.committed\",\"{#APINAME}\":\"jvm.memory.heap.init\",\"{#APINAME}\":\"jvm.memory.heap.max\",\"{#APINAME}\":\"jvm.memory.heap.usage\",\"{#APINAME}\":\"jvm.memory.heap.used\",\"{#APINAME}\":\"jvm.memory.non-heap.committed\",\"{#APINAME}\":\"jvm.memory.non-heap.init\",\"{#APINAME}\":\"jvm.memory.non-heap.max\",\"{#APINAME}\":\"jvm.memory.non-heap.usage\",\"{#APINAME}\":\"jvm.memory.non-heap.used\",\"{#APINAME}\":\"jvm.memory.pools.CMS-Old-Gen.usage\",\"{#APINAME}\":\"jvm.memory.pools.CMS-Perm-Gen.usage\",
+3415 : 20160216 : 141919.987 trapper got '{"clock":1456403903190,"data":[{"clock":1456403903190,"host":"te2.oss-hub.uk3.ribob01.net","key":"dropwizard.lld.key","value":"{\"data\":[\n {\"{#APINAME}\":\"jvm.fd.usage\"},\n {\"{#APINAME}\":\"mss.gateway.api.getTransactionDownloadHistory.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUser.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserContextIdTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserContextTypeTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserDevice.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserDeviceIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserDeviceTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserPurchasedItem.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserPurchasedItemBatch.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.purchaseDownloads.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.refundPurchase.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.reportPurchase.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.reportTrackPlayEvent.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.reportTrackPlays.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.sortArtistIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.sortReleaseIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateArtist.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateRelease.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateReleaseLicense.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateSubscription.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateTrack.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateTrackLicense.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateTrackPlayContexts.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateUser.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateUserDevice.requests\"}]}"}],"request":"sender data"}'
 ```
 
 For metrics values
 ```
-3413 : 20160216 : 141920.045 trapper got '{"clock":1455632359987,"data":[{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.fd.usage","value":"0.125732421875"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.gc.ConcurrentMarkSweep.count","value":"1"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.gc.ConcurrentMarkSweep.time","value":"549"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.gc.ParNew.count","value":"2"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.gc.ParNew.time","value":"326"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.memory.heap.committed","value":"1986461696"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.memory.heap.init","value":"2147483648"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.memory.heap.max","value":"1986461696"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.memory.heap.usage","value":"0.5180930949095934"},{"clock":1455632359874,"host":"te2.oss-hub.uk3.ribob01.net","key":"jvm.memory.heap.used","value":"1029172088"},
+3413 : 20160216 : 141920.045 trapper got '{"clock":1456403902846,"data":[{"clock":1456403902836,"host":"te2.oss-hub.uk3.ribob01.net","key":"gauge[jvm.fd.usage]","value":"0.061767578125"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"meters.1-minuteRate[mss.gateway.api.updateUserDevice.requests]","value":"2.964393875E-314"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"meters.5-minuteRate[mss.gateway.api.updateUserDevice.requests]","value":"7.362691676869196E-129"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"meters.15-minuteRate[mss.gateway.api.updateUserDevice.requests]","value":"3.3071448206190163E-44"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.min[mss.gateway.api.updateUserDevice.requests]","value":"44.605582"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.max[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.mean[mss.gateway.api.updateUserDevice.requests]","value":"136.063127375"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.stddev[mss.gateway.api.updateUserDevice.requests]","value":"236.53661471257732"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.median[mss.gateway.api.updateUserDevice.requests]","value":"52.844451"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p75[mss.gateway.api.updateUserDevice.requests]","value":"62.343593999999996"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p95[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p98[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p99[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p999[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"}],"request":"sender data"}'
 ```
