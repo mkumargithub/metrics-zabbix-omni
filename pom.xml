@@ -27,22 +27,18 @@
 			<artifactId>zabbix-sender</artifactId>
 			<version>0.0.1-OMNIFONE</version>
 		</dependency>
-		<!--<dependency>
-			<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-core</artifactId>
-			<version>3.1.2</version>
-		</dependency>-->
 
 		<dependency>
-			<groupId>io.dropwizard.metrics</groupId>
+			<groupId>com.codahale.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
-			<version>3.1.2-OMNIFONE</version>
+			<version>3.0.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-jvm</artifactId>
-			<version>3.1.2-OMNIFONE</version>
+			<version>3.1.2</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
