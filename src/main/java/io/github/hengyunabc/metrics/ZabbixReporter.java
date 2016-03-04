@@ -224,8 +224,10 @@ public class ZabbixReporter extends ScheduledReporter
 			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
 			keys.add(entry.getKey());
-			if(keys.contains(".requests")){
-				filteredKey.add(entry.getKey());
+			for (String string : keys) {
+				if (string.contains(".requests")) {
+					filteredKey.add(string);
+				}
 			}
 		}
 
