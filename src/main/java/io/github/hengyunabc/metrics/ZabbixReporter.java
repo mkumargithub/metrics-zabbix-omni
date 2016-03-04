@@ -116,16 +116,39 @@ public class ZabbixReporter extends ScheduledReporter
 	/**
 	 * All APIs List for zabbix lld
 	 */
-	private DataObject toDataObjects(List<String> keys) {
+
+	private DataObject gaugeToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
-		for (String tokey : keys) {
-			if (tokey.contains(".requests")) {
-				stringBuilder.append("\n {\"{#APINAME}\":\"").append(tokey).append("\"},");
+		for (String key : keys) {
+			if (key.contains(".jvm")) {
+				stringBuilder.append("\n {\"{#GAPINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.gauge").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+	private DataObject countersToDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String countersKey : keys) {
+			if (countersKey.contains(".activeRequests")) {
+				stringBuilder.append("\n {\"{#CAPINAME}\":\"").append(countersKey).append("\"},");
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.counters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+	private DataObject timersToDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String timersKey : keys) {
+			if (timersKey.contains(".requests")) {
+				stringBuilder.append("\n {\"{#TAPINAME}\":\"").append(timersKey).append("\"},");
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.timers").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
 	private DataObject metersToDataObjects(List<String> meterskeys) {
@@ -133,7 +156,6 @@ public class ZabbixReporter extends ScheduledReporter
 		for (String mkey : meterskeys) {
 			if (mkey.contains(".responseCodes.")) {
 				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(mkey).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -195,15 +217,18 @@ public class ZabbixReporter extends ScheduledReporter
 
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
-		List<String> keys = new LinkedList();
-		List<String> timerskeys = new LinkedList();
+		//List<String> keys = new LinkedList();
+		List<String> gKeys = new LinkedList();
+		List<String> cKeys = new LinkedList();
+		List<String> mKeys = new LinkedList();
+		List<String> tKeys = new LinkedList();
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			String type ="gauge";
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + "[" + (String) entry.getKey() + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
+			gKeys.add(apidataObject.getKey());
 		}
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
@@ -218,32 +243,36 @@ public class ZabbixReporter extends ScheduledReporter
 			// apidataObject for APIs list without type and suffix
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
+			cKeys.add(apidataObject.getKey());
 
 		}
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
 			addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
-			keys.add(entry.getKey());
+			//keys.add(entry.getKey());
 		}
 		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
 			Meter meter = (Meter) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
-			keys.add(entry.getKey());
+			mKeys.add(entry.getKey());
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
 			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
-			timerskeys.add(entry.getKey());
+			tKeys.add(entry.getKey());
 		}
 
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(timerskeys));
-			SenderResult senderMAPIsResult = this.zabbixSender.send(metersToDataObjects(keys));
-			if ( !!senderResult.success() && !!senderAPIsResult.success() && !!senderMAPIsResult.success()) {
+
+			SenderResult senderGaugesAPIsList = this.zabbixSender.send(gaugeToDataObjects(gKeys));
+			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
+			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
+			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
+
+			if ( !!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderCountersAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
