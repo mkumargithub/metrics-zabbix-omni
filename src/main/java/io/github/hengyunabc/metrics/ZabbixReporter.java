@@ -119,8 +119,10 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
-			//logger.debug("AllAPIsKeys: " + key);
+			if (keys.contains(".responseCodes.")) {
+				stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
@@ -182,7 +184,6 @@ public class ZabbixReporter extends ScheduledReporter
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
-		List<String> filteredKey =new LinkedList();
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			String type ="gauge";
@@ -203,9 +204,8 @@ public class ZabbixReporter extends ScheduledReporter
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
 			// apidataObject for APIs list without type and suffix
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
-
-				dataObjectList.add(dataObject);
-				keys.add(apidataObject.getKey());
+			dataObjectList.add(dataObject);
+			keys.add(apidataObject.getKey());
 
 		}
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
@@ -224,16 +224,11 @@ public class ZabbixReporter extends ScheduledReporter
 			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
 			keys.add(entry.getKey());
-			for (String string : keys) {
-				if (string.contains(".requests")) {
-					filteredKey.add(string);
-				}
-			}
 		}
 
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(filteredKey));
+			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 			if ( !!senderResult.success() && !!senderAPIsResult.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
