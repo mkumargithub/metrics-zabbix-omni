@@ -182,6 +182,7 @@ public class ZabbixReporter extends ScheduledReporter
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
+		List<String> filteredKey =new LinkedList();
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			String type ="gauge";
@@ -223,14 +224,15 @@ public class ZabbixReporter extends ScheduledReporter
 			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
 			keys.add(entry.getKey());
+			if(keys.contains(".requests")){
+				filteredKey.add(entry.getKey());
+			}
 		}
 
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			if(keys.contains(".activeRequests")) {
-				SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
-			}
-				if ( !!senderResult.success()) {
+			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(filteredKey));
+			if ( !!senderResult.success() && !!senderAPIsResult.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
