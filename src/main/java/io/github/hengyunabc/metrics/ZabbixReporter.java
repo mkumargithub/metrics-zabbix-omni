@@ -172,11 +172,13 @@ public class ZabbixReporter extends ScheduledReporter
 
 	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
 		String type = "meters";
-		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
-		dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
-		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Double.valueOf(convertRate(meter.getOneMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(meter.getFiveMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));
+		if (key.contains(".responseCodes.")) {
+			dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
+			dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
+			dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Double.valueOf(convertRate(meter.getOneMinuteRate()))));
+			dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(meter.getFiveMinuteRate()))));
+			dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));
+		}
 	}
 
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
@@ -199,12 +201,13 @@ public class ZabbixReporter extends ScheduledReporter
 		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			String type ="counters";
 			String suffix = ".count";
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
-			// apidataObject for APIs list without type and suffix
-			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
-			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
-
+			if (dataObjectList.contains(".activeRequests")) {
+				DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
+				// apidataObject for APIs list without type and suffix
+				DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
+				dataObjectList.add(dataObject);
+				keys.add(apidataObject.getKey());
+			}
 		}
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
