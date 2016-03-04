@@ -119,7 +119,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (keys.contains(".responseCodes.")) {
+			if (key.contains(".responseCodes.")) {
 				stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
