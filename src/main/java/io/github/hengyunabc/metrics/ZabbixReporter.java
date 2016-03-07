@@ -120,13 +120,13 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.contains("jvm.")||key.contains(".activeRequests")) {
-				stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
+			if (key.contains("jvm.")) {
+				stringBuilder.append("\n {\"{#JAPINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
 	private DataObject countersToDataObjects(List<String> keys) {
@@ -271,8 +271,8 @@ public class ZabbixReporter extends ScheduledReporter
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 
-			if ( !!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
-				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult +"   senderCountersAPIsList  "+senderCountersAPIsList);
+			if ( !!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success() && !!senderCountersAPIsList.success()) {
+				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
 			}
