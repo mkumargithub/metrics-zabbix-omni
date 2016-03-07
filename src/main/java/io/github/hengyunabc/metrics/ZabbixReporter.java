@@ -120,7 +120,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.contains(".jvm")||key.contains(".activeRequests")) {
+			if (key.contains("jvm.")||key.contains(".activeRequests")) {
 				stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
@@ -129,7 +129,7 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
-	/*private DataObject countersToDataObjects(List<String> keys) {
+	private DataObject countersToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String countersKey : keys) {
 			if (countersKey.contains(".activeRequests")) {
@@ -138,7 +138,7 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.counters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
-	}*/
+	}
 
 	private DataObject timersToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
@@ -243,7 +243,7 @@ public class ZabbixReporter extends ScheduledReporter
 			// apidataObject for APIs list without type and suffix
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
+			cKeys.add(apidataObject.getKey());
 
 		}
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
@@ -266,14 +266,13 @@ public class ZabbixReporter extends ScheduledReporter
 
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-
 			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjects(keys));
-			//SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
+			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 
 			if ( !!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
-				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
+				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult +"   senderCountersAPIsList  "+senderCountersAPIsList);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
 			}
