@@ -307,7 +307,6 @@ public class ZabbixReporter extends ScheduledReporter
 			SenderResult senderJvmCountList = this.zabbixSender.send(toDataObjectsJvmCount(keys));
 			SenderResult senderJvmTimeList = this.zabbixSender.send(toDataObjectsJvmTime(keys));
 			SenderResult senderJvmUsagetList = this.zabbixSender.send(toDataObjectsJvmUsage(keys));
-
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
