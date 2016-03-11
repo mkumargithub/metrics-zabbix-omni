@@ -120,7 +120,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.matches("jvm.memory.heap.*") || key.matches("jvm.memory.non-heap.*") || key.matches("jvm.thread-states.*") || key.matches("jvm.memory.total.*") ) {
+			if (key.matches("jvm.memory.heap.*") || key.matches("jvm.memory.non-heap.*") || key.matches("jvm.memory.total.*") ) {
 				stringBuilder.append("\n {\"{#JAPINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
