@@ -120,7 +120,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.matches("jvm.memory.heap.*") || key.matches("jvm.fd.*") || key.matches("jvm.memory.non-heap.*") || key.matches("jvm.thread-states.*") || key.matches("jvm.memory.total.*") ) {
+			if (key.matches("jvm.memory.heap.*") || key.matches("jvm.memory.non-heap.*") || key.matches("jvm.thread-states.*") || key.matches("jvm.memory.total.*") ) {
 				stringBuilder.append("\n {\"{#JAPINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
@@ -129,10 +129,22 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
+	private DataObject toDataObjectsJvmThread(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			if (key.matches("jvm.thread-states.*") ) {
+				stringBuilder.append("\n {\"{#JTAPINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm.thread").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
 	private DataObject toDataObjectsJvmMemoryPools(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.matches("jvm.memory.pools.*usage")) {
+			if (key.matches("jvm.memory.pools.*usage") || key.matches("jvm.fd.*")) {
 				stringBuilder.append("\n {\"{#JVMMPNAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
@@ -307,7 +319,7 @@ public class ZabbixReporter extends ScheduledReporter
 			SenderResult senderJvmGcCountList = this.zabbixSender.send(toDataObjectsJvmGcCount(keys));
 			SenderResult senderJvmGcTimeList = this.zabbixSender.send(toDataObjectsJvmGcTime(keys));
 			SenderResult senderJvmMemoryPoolstList = this.zabbixSender.send(toDataObjectsJvmMemoryPools(keys));
-
+			SenderResult senderJvmThreadtList = this.zabbixSender.send(toDataObjectsJvmThread(keys));
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
