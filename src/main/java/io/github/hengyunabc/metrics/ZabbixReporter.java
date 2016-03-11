@@ -168,7 +168,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject countersToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String countersKey : keys) {
-			if (countersKey.matches(".*activeRequests")) {
+			if (countersKey.contains(".activeRequests")) {
 				stringBuilder.append("\n {\"{#CAPINAME}\":\"").append(countersKey).append("\"},");
 			}
 		}
@@ -176,11 +176,10 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.counters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
-
 	private DataObject timersToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String timersKey : keys) {
-			if (timersKey.matches(".*requests")) {
+			if (timersKey.contains(".requests")) {
 				stringBuilder.append("\n {\"{#TAPINAME}\":\"").append(timersKey).append("\"},");
 			}
 		}
@@ -191,7 +190,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject metersToDataObjects(List<String> meterskeys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String mkey : meterskeys) {
-			if (mkey.contains(".*responseCodes.*")) {
+			if (mkey.contains(".responseCodes.")) {
 				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(mkey).append("\"},");
 			}
 		}
