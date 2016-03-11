@@ -132,7 +132,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjects1(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.contains("jvm.memory.pools.")) {
+			if (key.matches("jvm.memory.pools.*usage")) {
 				stringBuilder.append("\n {\"{#JPAPINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
