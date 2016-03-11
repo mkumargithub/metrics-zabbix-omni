@@ -129,6 +129,18 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
+	private DataObject toDataObjects1(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			if (key.contains("jvm.memory.pools.")) {
+				stringBuilder.append("\n {\"{#JPAPINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm.pool").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
 	private DataObject countersToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String countersKey : keys) {
@@ -241,7 +253,7 @@ public class ZabbixReporter extends ScheduledReporter
 			String suffix = ".count";
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
 			// apidataObject for APIs list without type and suffix
-			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
+			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey() ).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 			cKeys.add(apidataObject.getKey());
 
@@ -267,6 +279,8 @@ public class ZabbixReporter extends ScheduledReporter
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
 			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjects(keys));
+			SenderResult senderGaugesAPIsList1 = this.zabbixSender.send(toDataObjects1(keys));
+
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
