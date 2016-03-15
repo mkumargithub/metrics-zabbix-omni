@@ -41,74 +41,159 @@ report: keys added
 SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 ```java
 public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
-		List<DataObject> dataObjectList = new LinkedList();
-		List<String> keys = new LinkedList();
+	List<DataObject> dataObjectList = new LinkedList();
+	List<String> keys = new LinkedList();
+	List<String> gKeys = new LinkedList();
+	List<String> cKeys = new LinkedList();
+	List<String> mKeys = new LinkedList();
+	List<String> tKeys = new LinkedList();
 
-
-		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-			String type ="gauge";
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + "[" + (String) entry.getKey() + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
-			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
-			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
-		}
+	for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
+		String type ="gauge";
+		DataObject dataObject = DataObject.builder().host(this.hostName).key(type + "[" + (String) entry.getKey() + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
+		DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
+		dataObjectList.add(dataObject);
+		keys.add(apidataObject.getKey());
+	}
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 		}*/
 
-		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-			String type ="counters";
-			String suffix = ".count";
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
-			// apidataObject for APIs list without type and suffix
-			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
-			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
+	for (Map.Entry<String, Counter> entry : counters.entrySet()) {
+		String type ="counters";
+		String suffix = ".count";
+		DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
+		// apidataObject for APIs list without type and suffix
+		DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey() ).value("" + ((Counter) entry.getValue()).getCount()).build();
+		dataObjectList.add(dataObject);
+		cKeys.add(apidataObject.getKey());
 
-		}
-		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
-			Histogram histogram = (Histogram) entry.getValue();
-			Snapshot snapshot = histogram.getSnapshot();
-			addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
-			keys.add(entry.getKey());
-		}
-		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
-			Meter meter = (Meter) entry.getValue();
-			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
-			keys.add(entry.getKey());
-		}
-		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
-			Timer timer = (Timer) entry.getValue();
-			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
-			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
-			keys.add(entry.getKey());
-		}
+	}
+	for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
+		Histogram histogram = (Histogram) entry.getValue();
+		Snapshot snapshot = histogram.getSnapshot();
+		addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
+		keys.add(entry.getKey());
+	}
+	for (Map.Entry<String, Meter> entry : meters.entrySet()) {
+		Meter meter = (Meter) entry.getValue();
+		addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
+		mKeys.add(entry.getKey());
+	}
+	for (Map.Entry<String, Timer> entry : timers.entrySet()) {
+		Timer timer = (Timer) entry.getValue();
+		addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
+		addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
+		tKeys.add(entry.getKey());
+	}
 
-		try {
-			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-			SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
-			if ( !!senderResult.success() && !!senderAPIsResult.success()) {
-				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
-			} else if (logger.isDebugEnabled()) {
-				logger.info("report metrics to zabbix success. " + senderResult);
-			}
-		} catch (IOException e) {
-			logger.error("report APIs List & metrics to zabbix error!");
+	try {
+		SenderResult senderResult = this.zabbixSender.send(dataObjectList);
+		SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
+		SenderResult senderJvmGcTimeList = this.zabbixSender.send(toDataObjectsJvmGcTime(keys));
+		SenderResult senderJvmMemoryPoolstList = this.zabbixSender.send(toDataObjectsJvmMemoryPools(keys));
+		SenderResult senderJvmThreadtList = this.zabbixSender.send(toDataObjectsJvmThread(keys));
+		SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
+		SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
+		SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
+
+		if ( !!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success() && !!senderCountersAPIsList.success()) {
+			logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
+		} else if (logger.isDebugEnabled()) {
+			logger.info("report metrics to zabbix success. " + senderResult);
 		}
+	} catch (IOException e) {
+		logger.error("report APIs List & metrics to zabbix error!");
+	}
+}
 ```
 
-toDataObjects method created to list out all APIs
+methods created to list out all APIs and JVM list
 ```java
-private DataObject toDataObjects(List<String> keys) {
+
+	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			stringBuilder.append("\n {\"{#APINAME}\":\"").append(key).append("\"},");
-			//logger.debug("AllAPIsKeys: " + key);
+			if (key.matches("jvm.*init") || key.matches("jvm.*committed") || key.matches("jvm.*max") || key.matches("jvm.*used") ) {
+				stringBuilder.append("\n {\"{#JVMAPINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+	private DataObject toDataObjectsJvmThread(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			if (key.matches("jvm.*count") ) {
+				stringBuilder.append("\n {\"{#JCAPINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm.count").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+	private DataObject toDataObjectsJvmMemoryPools(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			if (key.matches("jvm.*usage")) {
+				stringBuilder.append("\n {\"{#JUAPINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm.usage").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+	private DataObject toDataObjectsJvmGcTime(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String key : keys) {
+			if (key.matches("jvm.*time")) {
+				stringBuilder.append("\n {\"{#JTAPINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm.time").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+
+	private DataObject countersToDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String countersKey : keys) {
+			if (countersKey.contains(".activeRequests")) {
+				stringBuilder.append("\n {\"{#CAPINAME}\":\"").append(countersKey).append("\"},");
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.counters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+
+	private DataObject timersToDataObjects(List<String> keys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String timersKey : keys) {
+			if (timersKey.contains(".requests")) {
+				stringBuilder.append("\n {\"{#TAPINAME}\":\"").append(timersKey).append("\"},");
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.timers").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
+	}
+
+	private DataObject metersToDataObjects(List<String> meterskeys) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (String mkey : meterskeys) {
+			if (mkey.contains(".responseCodes.")) {
+				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(mkey).append("\"},");
+			}
+		}
+		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.meters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 ```
 
