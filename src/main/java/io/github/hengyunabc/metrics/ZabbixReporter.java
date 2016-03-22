@@ -124,12 +124,16 @@ public class ZabbixReporter extends ScheduledReporter
 				stringBuilder.append("\n {\"{#JVMAPINAME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
+			if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
+				stringBuilder.append("\n {\"{#JVMUAPINAME}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
+			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
-	private DataObject toDataObjectsJvmUsage(List<String> keys) {
+	/*private DataObject toDataObjectsJvmUsage(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
 			if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
@@ -139,7 +143,7 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm.usage").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
-	}
+	}*/
 
 	private DataObject toDataObjectsJvmHeap(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
@@ -357,7 +361,7 @@ public class ZabbixReporter extends ScheduledReporter
 			SenderResult senderJvmMemoryPoolAPIsList = this.zabbixSender.send(toDataObjectsJvmMemoryPools(keys));
 			SenderResult senderJvmNonHeapAPIsList = this.zabbixSender.send(toDataObjectsJvmNonHeap(keys));
 			SenderResult senderJvmThreadAPIsList = this.zabbixSender.send(toDataObjectsJvmThread(keys));
-			SenderResult senderJvmUsageAPIsList = this.zabbixSender.send(toDataObjectsJvmUsage(keys));
+			//SenderResult senderJvmUsageAPIsList = this.zabbixSender.send(toDataObjectsJvmUsage(keys));
 			//counters
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			//meters
