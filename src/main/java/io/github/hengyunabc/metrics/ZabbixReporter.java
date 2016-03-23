@@ -187,9 +187,7 @@ public class ZabbixReporter extends ScheduledReporter
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String mkey : meterskeys) {
 			if (mkey.contains(".responseCodes.")) {
-				int index = mkey.indexOf(".responseCodes.") + ".responseCodes".length();
-				String subKey = mkey.substring(0, index);
-				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(subKey).append("\"},");
+				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(mkey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -233,18 +231,13 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
-	/*private void addTimerDataObject(String key, Timer timers, List<DataObject> dataObjectList) {
-		String type = "timers";
-		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(timers.getCount())));
-	}*/
 
 	/**
 	 * for meters.
 	 */
 	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
-		String responseType = key.substring(key.indexOf(".responseCodes.") + ".responseCodes.".length());
 		String type = "meters";
-		dataObjectList.add(toDataObject(type, ".count." + responseType, key, Long.valueOf(meter.getCount())));
+		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
 		dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
 		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Double.valueOf(convertRate(meter.getOneMinuteRate()))));
 		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(meter.getFiveMinuteRate()))));
@@ -279,8 +272,8 @@ public class ZabbixReporter extends ScheduledReporter
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey() ).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 			cKeys.add(apidataObject.getKey());
-		}
 
+		}
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
@@ -310,7 +303,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 
-			if ( !!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
+			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success() && !!senderCountersAPIsList.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
