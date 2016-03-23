@@ -113,6 +113,13 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
 
+
+	/*private DataObject toDataObjectMeters(String type, String suffix, String key, Object value) {
+		int index = key.indexOf(".responseCodes.") + ".responseCodes".length();
+		String subKey = key.substring(0, index);
+		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + subKey + "]").value("" + value).build();
+	}*/
+
 	/**
 	 * All JVM APIs List for zabbix lld
 	 */
@@ -187,7 +194,9 @@ public class ZabbixReporter extends ScheduledReporter
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String mkey : meterskeys) {
 			if (mkey.contains(".responseCodes.")) {
-				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(mkey).append("\"},");
+				int index = mkey.indexOf(".responseCodes.") + ".responseCodes".length();
+				String subKey = mkey.substring(0, index);
+				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(subKey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -237,7 +246,10 @@ public class ZabbixReporter extends ScheduledReporter
 	 */
 	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
 		String type = "meters";
-		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
+		String responseType = key.substring(key.indexOf(".responseCodes.") + ".responseCodes.".length());
+		int index = key.indexOf(".responseCodes.") + ".responseCodes".length();
+		String subKey = key.substring(0, index);
+		dataObjectList.add(toDataObject(type, ".count." + responseType, subKey, Long.valueOf(meter.getCount())));
 		dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
 		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Double.valueOf(convertRate(meter.getOneMinuteRate()))));
 		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(meter.getFiveMinuteRate()))));
@@ -280,9 +292,14 @@ public class ZabbixReporter extends ScheduledReporter
 			addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
 			keys.add(entry.getKey());
 		}
+		//need to update
+
 		for (Map.Entry<String, Meter> entry : meters.entrySet()) {
 			Meter meter = (Meter) entry.getValue();
+			// for metrics value
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
+
+			//for LLD discovery
 			mKeys.add(entry.getKey());
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
