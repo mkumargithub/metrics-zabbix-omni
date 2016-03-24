@@ -222,15 +222,10 @@ public class ZabbixReporter extends ScheduledReporter
 		// output: timers.min[mss.gateway.api.all.requests]
 		// timers.p75[mss.gateway.api.updateUserDevice.requests]
 		String type = "timers";
-		//dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
-		//dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
-		//dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
 		dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
 		//dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
-		//dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
-		//dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
 
@@ -238,15 +233,11 @@ public class ZabbixReporter extends ScheduledReporter
 	 * for meters.
 	 */
 	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
-		String type = "meters.";
+		String type = "meters";
 		String responseType = key.substring(key.indexOf(".responseCodes.") + ".responseCodes.".length());
 		int index = key.indexOf(".responseCodes.") + ".responseCodes".length();
 		String subKey = key.substring(0, index);
-		dataObjectList.add(toDataObject(type, responseType, ".count" +subKey, Long.valueOf(meter.getCount())));
-		/*dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
-		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Double.valueOf(convertRate(meter.getOneMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(meter.getFiveMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));*/
+		dataObjectList.add(toDataObject(type, ".count." +  responseType, subKey, Long.valueOf(meter.getCount())));
 	}
 
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
