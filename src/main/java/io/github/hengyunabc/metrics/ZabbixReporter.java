@@ -113,13 +113,6 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
 
-
-	/*private DataObject toDataObjectMeters(String type, String suffix, String key, Object value) {
-		int index = key.indexOf(".responseCodes.") + ".responseCodes".length();
-		String subKey = key.substring(0, index);
-		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + subKey + "]").value("" + value).build();
-	}*/
-
 	/**
 	 * All JVM APIs List for zabbix lld
 	 */
@@ -132,31 +125,31 @@ public class ZabbixReporter extends ScheduledReporter
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
-				stringBuilder.append("\n {\"{#JVMUAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_USAGE}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.memory.heap.*used") || key.matches("jvm.memory.heap.*committed")) {
-				stringBuilder.append("\n {\"{#JHAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_HEAP}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.memory.non-heap.*used") || key.matches("jvm.memory.non-heap.*committed")) {
-				stringBuilder.append("\n {\"{#JNHAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_NONHEAP}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.*time")) {
-				stringBuilder.append("\n {\"{#JTAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_TIME}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.memory.pools.*usage")) {
-				stringBuilder.append("\n {\"{#JMUAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_MEMORY_POOL}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.gc.*count") ) {
-				stringBuilder.append("\n {\"{#JGCAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_GC_COUNT}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.thread-states.*count") ) {
-				stringBuilder.append("\n {\"{#JTCAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_THREAD_COUNT}\":\"").append(key).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
 		}
@@ -213,7 +206,7 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
 		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
 		//median is a p50
-		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
+		dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
 		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(snapshot.get95thPercentile())));
 		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
@@ -229,15 +222,15 @@ public class ZabbixReporter extends ScheduledReporter
 		// output: timers.min[mss.gateway.api.all.requests]
 		// timers.p75[mss.gateway.api.updateUserDevice.requests]
 		String type = "timers";
-		dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
-		dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
+		//dataObjectList.add(toDataObject(type, ".min", key, Double.valueOf(convertDuration(snapshot.getMin()))));
+		//dataObjectList.add(toDataObject(type, ".max", key, Double.valueOf(convertDuration(snapshot.getMax()))));
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
-		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
-		dataObjectList.add(toDataObject(type, ".median", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
+		//dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
+		dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
+		//dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
+		//dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
+		//dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(convertDuration(snapshot.get99thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
 
@@ -245,15 +238,15 @@ public class ZabbixReporter extends ScheduledReporter
 	 * for meters.
 	 */
 	private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
-		String type = "meters";
+		String type = "meters.";
 		String responseType = key.substring(key.indexOf(".responseCodes.") + ".responseCodes.".length());
 		int index = key.indexOf(".responseCodes.") + ".responseCodes".length();
 		String subKey = key.substring(0, index);
-		dataObjectList.add(toDataObject(type, ".count." + responseType, subKey, Long.valueOf(meter.getCount())));
-		dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
+		dataObjectList.add(toDataObject(type, responseType, ".count" +subKey, Long.valueOf(meter.getCount())));
+		/*dataObjectList.add(toDataObject(type, ".meanRate", key, Double.valueOf(convertRate(meter.getMeanRate()))));
 		dataObjectList.add(toDataObject(type, ".1-minuteRate", key, Double.valueOf(convertRate(meter.getOneMinuteRate()))));
 		dataObjectList.add(toDataObject(type, ".5-minuteRate", key, Double.valueOf(convertRate(meter.getFiveMinuteRate()))));
-		dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));
+		dataObjectList.add(toDataObject(type, ".15-minuteRate", key, Double.valueOf(convertRate(meter.getFifteenMinuteRate()))));*/
 	}
 
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
@@ -284,7 +277,6 @@ public class ZabbixReporter extends ScheduledReporter
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey() ).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 			cKeys.add(apidataObject.getKey());
-
 		}
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
@@ -298,7 +290,6 @@ public class ZabbixReporter extends ScheduledReporter
 			Meter meter = (Meter) entry.getValue();
 			// for metrics value
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
-
 			//for LLD discovery
 			mKeys.add(entry.getKey());
 		}
