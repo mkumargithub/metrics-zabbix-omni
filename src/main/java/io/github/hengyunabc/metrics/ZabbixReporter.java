@@ -207,8 +207,8 @@ public class ZabbixReporter extends ScheduledReporter
 		String type = "timers";
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
 		dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(snapshot.get95thPercentile())));
-		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertRate(snapshot.get999thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
+		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))/1000));
 	}
 	private void addTimerDataObject(String key, Timer timer, List<DataObject> dataObjectList) {
 		String type = "timers";
