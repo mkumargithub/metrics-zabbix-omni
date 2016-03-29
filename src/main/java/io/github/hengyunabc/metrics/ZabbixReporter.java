@@ -126,31 +126,24 @@ public class ZabbixReporter extends ScheduledReporter
 			}
 			if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
 				stringBuilder.append("\n {\"{#JVM_USAGE}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.memory.heap.*used") || key.matches("jvm.memory.heap.*committed")) {
 				stringBuilder.append("\n {\"{#JVM_HEAP}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.memory.non-heap.*used") || key.matches("jvm.memory.non-heap.*committed")) {
 				stringBuilder.append("\n {\"{#JVM_NONHEAP}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.*time")) {
 				stringBuilder.append("\n {\"{#JVM_TIME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.memory.pools.*usage")) {
 				stringBuilder.append("\n {\"{#JVM_MEMORY_POOL}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.gc.*count") ) {
 				stringBuilder.append("\n {\"{#JVM_GC_COUNT}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 			if (key.matches("jvm.thread-states.*count") ) {
 				stringBuilder.append("\n {\"{#JVM_THREAD_COUNT}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -201,15 +194,7 @@ public class ZabbixReporter extends ScheduledReporter
 	 */
 	private void addSnapshotDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
 		String type = "histograms";
-		dataObjectList.add(toDataObject(type, ".min", key, Long.valueOf(snapshot.getMin())));
-		dataObjectList.add(toDataObject(type, ".max", key, Long.valueOf(snapshot.getMax())));
-		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
-		dataObjectList.add(toDataObject(type, ".stddev", key, Double.valueOf(convertDuration(snapshot.getStdDev()))));
-		//median is a p50
 		dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
-		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(snapshot.get95thPercentile())));
-		dataObjectList.add(toDataObject(type, ".p98", key, Double.valueOf(convertDuration(snapshot.get98thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p99", key, Double.valueOf(snapshot.get99thPercentile())));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
 	}
@@ -219,14 +204,15 @@ public class ZabbixReporter extends ScheduledReporter
 	 * for timers.
 	 */
 	private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
-		// output: timers.min[mss.gateway.api.all.requests]
-		// timers.p75[mss.gateway.api.updateUserDevice.requests]
 		String type = "timers";
 		dataObjectList.add(toDataObject(type, ".mean", key, Double.valueOf(convertDuration(snapshot.getMean()))));
 		dataObjectList.add(toDataObject(type, ".p50", key, Double.valueOf(convertDuration(snapshot.getMedian()))));
-		//dataObjectList.add(toDataObject(type, ".p75", key, Double.valueOf(convertDuration(snapshot.get75thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p95", key, Double.valueOf(convertDuration(snapshot.get95thPercentile()))));
 		dataObjectList.add(toDataObject(type, ".p999", key, Double.valueOf(convertDuration(snapshot.get999thPercentile()))));
+	}
+	private void addTimerDataObject(String key, Timer timer, List<DataObject> dataObjectList) {
+		String type = "timers";
+		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(timer.getCount())));
 	}
 
 	/**
@@ -286,7 +272,7 @@ public class ZabbixReporter extends ScheduledReporter
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
-			addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
+			addTimerDataObject((String) entry.getKey(), timer, dataObjectList);
 			addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
 			tKeys.add(entry.getKey());
 		}
