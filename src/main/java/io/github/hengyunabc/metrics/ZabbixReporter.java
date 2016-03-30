@@ -240,7 +240,7 @@ public class ZabbixReporter extends ScheduledReporter
 			int index = key.lastIndexOf(".") + "".length();
 			String subKey = key.substring(0, index);
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + responseType + "[" + (String) subKey + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
-			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
+			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) key).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
 			keys.add(apidataObject.getKey());
 		}
