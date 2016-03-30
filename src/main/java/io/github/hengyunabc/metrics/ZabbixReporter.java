@@ -120,13 +120,13 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.matches("jvm.memory.total.*committed") || key.matches("jvm.*init") || key.matches("jvm.*max") || key.matches("jvm.memory.total.*used") ) {
-				int index = key.indexOf(".total.") + ".total".length();
+			if (key.matches("jvm.") ) {
+				int index = key.lastIndexOf(".") + "".length();
 				String subKey = key.substring(0, index);
 				stringBuilder.append("\n {\"{#JVMAPINAME}\":\"").append(subKey).append("\"},");
 				//logger.debug("AllAPIsKeys: " + key);
 			}
-			if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
+			/*if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
 				stringBuilder.append("\n {\"{#JVM_USAGE}\":\"").append(key).append("\"},");
 			}
 			if (key.matches("jvm.memory.heap.*used") || key.matches("jvm.memory.heap.*committed")) {
@@ -146,7 +146,7 @@ public class ZabbixReporter extends ScheduledReporter
 			}
 			if (key.matches("jvm.thread-states.*count") ) {
 				stringBuilder.append("\n {\"{#JVM_THREAD_COUNT}\":\"").append(key).append("\"},");
-			}
+			}*/
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
@@ -236,10 +236,10 @@ public class ZabbixReporter extends ScheduledReporter
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			String type ="gauge";
 			String key = entry.getKey();
-			String responseType =  key.substring(key.indexOf(".total.") + ".total.".length());
-			int index = key.indexOf(".total.") + ".total".length();
+			String responseType =  key.substring(key.lastIndexOf(".") + "".length());
+			int index = key.lastIndexOf(".") + "".length();
 			String subKey = key.substring(0, index);
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + "[" + (String) subKey + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
+			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + responseType + "[" + (String) subKey + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
 			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
 			keys.add(apidataObject.getKey());
