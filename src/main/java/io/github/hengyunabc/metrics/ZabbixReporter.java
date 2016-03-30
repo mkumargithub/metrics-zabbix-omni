@@ -120,7 +120,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.matches("jvm.") ) {
+			if (key.matches("jvm.*") ) {
 				int index = key.lastIndexOf(".") + "".length();
 				String subKey = key.substring(0, index);
 				stringBuilder.append("\n {\"{#JVMAPINAME}\":\"").append(subKey).append("\"},");
