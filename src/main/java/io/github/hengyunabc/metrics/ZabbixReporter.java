@@ -231,15 +231,15 @@ public class ZabbixReporter extends ScheduledReporter
 		List<String> tKeys = new LinkedList();
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-			String type ="gauge";
+			String type ="jvm";
 			String key = entry.getKey();
 			String responseType =  key.substring(key.lastIndexOf(".") + "".length());
 			int index = key.lastIndexOf(".") + "".length();
 			String subKey = key.substring(0, index);
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + responseType + "[" + (String) subKey + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
-			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
+			DataObject apidataObjectList = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apidataObject.getKey());
+			keys.add(apidataObjectList.getKey());
 		}
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
@@ -281,13 +281,13 @@ public class ZabbixReporter extends ScheduledReporter
 			//JVM
 			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
 			//counters
-			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
+			//SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			//meters
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 
-			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success() && !!senderCountersAPIsList.success()) {
+			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
