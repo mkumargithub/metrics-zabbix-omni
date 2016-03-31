@@ -116,12 +116,11 @@ public class ZabbixReporter extends ScheduledReporter
 	/**
 	 * All JVM APIs List for zabbix lld
 	 */
-
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
 			if (key.matches("jvm.*") ) {
-				stringBuilder.append("\n {\"{#JVMAPINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM_APINAME}\":\"").append(key).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -131,22 +130,22 @@ public class ZabbixReporter extends ScheduledReporter
 	/**
 	 * All APIs List for zabbix lld
 	 */
-	/*private DataObject countersToDataObjects(List<String> keys) {
+	private DataObject countersToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String countersKey : keys) {
 			if (countersKey.contains(".activeRequests")) {
-				stringBuilder.append("\n {\"{#CAPINAME}\":\"").append(countersKey).append("\"},");
+				stringBuilder.append("\n {\"{#COUNTER_APINAME}\":\"").append(countersKey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.counters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
-	}*/
+	}
 
 	private DataObject timersToDataObjects(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String timersKey : keys) {
 			if (timersKey.contains(".requests")) {
-				stringBuilder.append("\n {\"{#TAPINAME}\":\"").append(timersKey).append("\"},");
+				stringBuilder.append("\n {\"{#TIMERS_APINAME}\":\"").append(timersKey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -159,7 +158,7 @@ public class ZabbixReporter extends ScheduledReporter
 			if (mkey.contains(".responseCodes.")) {
 				int index = mkey.indexOf(".responseCodes.") + ".responseCodes".length();
 				String subKey = mkey.substring(0, index);
-				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(subKey).append("\"},");
+				stringBuilder.append("\n {\"{#METERS_APINAME}\":\"").append(subKey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -215,12 +214,10 @@ public class ZabbixReporter extends ScheduledReporter
 			String responseType =  key.substring(key.lastIndexOf(".") + "".length());
 			int index = key.lastIndexOf(".") + "".length();
 			String subKey = key.substring(0, index);
-			//To get metrics values
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + responseType + "[" + (String) subKey + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
-			//for discovery - list of APIs
-			DataObject apiObjectList = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
+			DataObject apidataObjectList = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apiObjectList.getKey());
+			keys.add(apidataObjectList.getKey());
 		}
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
@@ -228,7 +225,7 @@ public class ZabbixReporter extends ScheduledReporter
 			dataObjectList.add(dataObject);
 		}*/
 
-		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
+		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			String type ="counters";
 			String suffix = ".count";
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
@@ -237,13 +234,6 @@ public class ZabbixReporter extends ScheduledReporter
 			dataObjectList.add(dataObject);
 			cKeys.add(apidataObject.getKey());
 		}
-*/
-
-		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-			DataObject dataObject = DataObject.builder().host(hostName).key(prefix + entry.getKey()).value("" + entry.getValue().getCount()).build();
-			dataObjectList.add(dataObject);
-		}
-
 		for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
 			Histogram histogram = (Histogram) entry.getValue();
 			Snapshot snapshot = histogram.getSnapshot();
@@ -267,7 +257,7 @@ public class ZabbixReporter extends ScheduledReporter
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
 			//JVM
-			SenderResult senderJVMAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
+			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
 			//counters
 			//SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			//meters
@@ -275,14 +265,10 @@ public class ZabbixReporter extends ScheduledReporter
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 
-			if (!!senderResult.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
-				logger.warn("report APIs List & metrics to zabbix not success!" + "SenderResult: "+ senderResult );
-				logger.warn("report Meters APIs List & metrics to zabbix not success!" + "SenderResult: "+ senderMetersAPIsList );
-			} else if(!!senderJVMAPIsList.success()) {
-				logger.warn("report JVM APIs List & metrics to zabbix not success!" + "senderGaugesAPIsList: "+ senderJVMAPIsList);
-			}else if (logger.isDebugEnabled()) {
+			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
+				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
+			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
-				logger.info("report JVM metrics to zabbix success. " + senderJVMAPIsList);
 			}
 		} catch (IOException e) {
 			logger.error("report APIs List & metrics to zabbix error!");
