@@ -120,23 +120,22 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.matches("jvm.*") ) {
-				stringBuilder.append("\n {\"{#JVM}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
+			if (key.matches("jvm.thread.*") ) {
+				stringBuilder.append("\n {\"{#JVM_THREAD}\":\"").append(key).append("\"},");
 			}
-			/*if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
-				stringBuilder.append("\n {\"{#JVM_USAGE}\":\"").append(key).append("\"},");
-			}
-			if (key.matches("jvm.memory.heap.*used") || key.matches("jvm.memory.heap.*committed")) {
+			if (key.matches("jvm.memory.heap.*")) {
 				stringBuilder.append("\n {\"{#JVM_HEAP}\":\"").append(key).append("\"},");
 			}
-			if (key.matches("jvm.memory.non-heap.*used") || key.matches("jvm.memory.non-heap.*committed")) {
+			if (key.matches("jvm.memory.non-heap.*")) {
 				stringBuilder.append("\n {\"{#JVM_NONHEAP}\":\"").append(key).append("\"},");
 			}
-			if (key.matches("jvm.*time")) {
-				stringBuilder.append("\n {\"{#JVM_TIME}\":\"").append(key).append("\"},");
+			if (key.matches("jvm.gc.*")) {
+				stringBuilder.append("\n {\"{#JVM_GC}\":\"").append(key).append("\"},");
 			}
-			if (key.matches("jvm.memory.pools.*usage")) {
+			if (key.matches("jvm.memory.pools.*")) {
+				stringBuilder.append("\n {\"{#JVM_MEM_POOL}\":\"").append(key).append("\"},");
+			}
+			/*if (key.matches("jvm.memory.pools.*usage")) {
 				stringBuilder.append("\n {\"{#JVM_MEMORY_POOL}\":\"").append(key).append("\"},");
 			}
 			if (key.matches("jvm.gc.*count") ) {
