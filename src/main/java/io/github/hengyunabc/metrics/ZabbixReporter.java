@@ -231,15 +231,15 @@ public class ZabbixReporter extends ScheduledReporter
 		List<String> tKeys = new LinkedList();
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-			String type ="jvm";
+			String type ="gauge";
 			String key = entry.getKey();
 			String responseType =  key.substring(key.lastIndexOf(".") + "".length());
 			int index = key.lastIndexOf(".") + "".length();
 			String subKey = key.substring(0, index);
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + responseType + "[" + (String) subKey + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
-			DataObject apidataObjectList = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
+			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apidataObjectList.getKey());
+			keys.add(apidataObject.getKey());
 		}
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
