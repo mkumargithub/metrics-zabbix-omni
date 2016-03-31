@@ -116,12 +116,35 @@ public class ZabbixReporter extends ScheduledReporter
 	/**
 	 * All JVM APIs List for zabbix lld
 	 */
+
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
 			if (key.matches("jvm.*") ) {
-				stringBuilder.append("\n {\"{#JVM_APINAME}\":\"").append(key).append("\"},");
+				stringBuilder.append("\n {\"{#JVM}\":\"").append(key).append("\"},");
+				//logger.debug("AllAPIsKeys: " + key);
 			}
+			/*if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
+				stringBuilder.append("\n {\"{#JVM_USAGE}\":\"").append(key).append("\"},");
+			}
+			if (key.matches("jvm.memory.heap.*used") || key.matches("jvm.memory.heap.*committed")) {
+				stringBuilder.append("\n {\"{#JVM_HEAP}\":\"").append(key).append("\"},");
+			}
+			if (key.matches("jvm.memory.non-heap.*used") || key.matches("jvm.memory.non-heap.*committed")) {
+				stringBuilder.append("\n {\"{#JVM_NONHEAP}\":\"").append(key).append("\"},");
+			}
+			if (key.matches("jvm.*time")) {
+				stringBuilder.append("\n {\"{#JVM_TIME}\":\"").append(key).append("\"},");
+			}
+			if (key.matches("jvm.memory.pools.*usage")) {
+				stringBuilder.append("\n {\"{#JVM_MEMORY_POOL}\":\"").append(key).append("\"},");
+			}
+			if (key.matches("jvm.gc.*count") ) {
+				stringBuilder.append("\n {\"{#JVM_GC_COUNT}\":\"").append(key).append("\"},");
+			}
+			if (key.matches("jvm.thread-states.*count") ) {
+				stringBuilder.append("\n {\"{#JVM_THREAD_COUNT}\":\"").append(key).append("\"},");
+			}*/
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
@@ -134,7 +157,7 @@ public class ZabbixReporter extends ScheduledReporter
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String countersKey : keys) {
 			if (countersKey.contains(".activeRequests")) {
-				stringBuilder.append("\n {\"{#COUNTER_APINAME}\":\"").append(countersKey).append("\"},");
+				stringBuilder.append("\n {\"{#COUNTERS}\":\"").append(countersKey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -145,7 +168,7 @@ public class ZabbixReporter extends ScheduledReporter
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String timersKey : keys) {
 			if (timersKey.contains(".requests")) {
-				stringBuilder.append("\n {\"{#TIMERS_APINAME}\":\"").append(timersKey).append("\"},");
+				stringBuilder.append("\n {\"{#TIMERS}\":\"").append(timersKey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -158,7 +181,7 @@ public class ZabbixReporter extends ScheduledReporter
 			if (mkey.contains(".responseCodes.")) {
 				int index = mkey.indexOf(".responseCodes.") + ".responseCodes".length();
 				String subKey = mkey.substring(0, index);
-				stringBuilder.append("\n {\"{#METERS_APINAME}\":\"").append(subKey).append("\"},");
+				stringBuilder.append("\n {\"{#METERS}\":\"").append(subKey).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -209,15 +232,15 @@ public class ZabbixReporter extends ScheduledReporter
 		List<String> tKeys = new LinkedList();
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-			String type ="jvm";
+			String type ="gauge";
 			String key = entry.getKey();
 			String responseType =  key.substring(key.lastIndexOf(".") + "".length());
 			int index = key.lastIndexOf(".") + "".length();
 			String subKey = key.substring(0, index);
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(type + responseType + "[" + (String) subKey + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
-			DataObject apidataObjectList = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
+			DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) subKey).value(((Gauge) entry.getValue()).getValue().toString()).build();
 			dataObjectList.add(dataObject);
-			keys.add(apidataObjectList.getKey());
+			keys.add(apidataObject.getKey());
 		}
 
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
@@ -259,13 +282,13 @@ public class ZabbixReporter extends ScheduledReporter
 			//JVM
 			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
 			//counters
-			//SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
+			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			//meters
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 
-			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
+			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success() && !!senderCountersAPIsList.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
