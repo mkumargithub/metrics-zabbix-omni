@@ -281,13 +281,13 @@ public class ZabbixReporter extends ScheduledReporter
 			//JVM
 			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
 			//counters
-			//SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
+			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 			//meters
 			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 
-			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success()) {
+			if (!!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success() && !!senderCountersAPIsList.success()) {
 				logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
 			} else if (logger.isDebugEnabled()) {
 				logger.info("report metrics to zabbix success. " + senderResult);
