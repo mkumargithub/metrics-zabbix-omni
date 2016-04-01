@@ -120,7 +120,7 @@ public class ZabbixReporter extends ScheduledReporter
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String key : keys) {
-			if (key.matches("jvm.thread.*") ) {
+			/*if (key.matches("jvm.thread.*") ) {
 				stringBuilder.append("\n {\"{#JVM_THREAD}\":\"").append(key).append("\"},");
 			}
 			if (key.matches("jvm.memory.heap.*")) {
@@ -129,14 +129,14 @@ public class ZabbixReporter extends ScheduledReporter
 			if (key.matches("jvm.memory.non-heap.*")) {
 				stringBuilder.append("\n {\"{#JVM_NONHEAP}\":\"").append(key).append("\"},");
 			}
+			if (key.matches("jvm.memory.total.*")) {
+				stringBuilder.append("\n {\"{#JVM_MEM_TOTAL}\":\"").append(key).append("\"},");
+			}*/
 			if (key.matches("jvm.gc.*")) {
 				stringBuilder.append("\n {\"{#JVM_GC}\":\"").append(key).append("\"},");
 			}
 			if (key.matches("jvm.memory.pools.*")) {
 				stringBuilder.append("\n {\"{#JVM_MEM_POOL}\":\"").append(key).append("\"},");
-			}
-			if (key.matches("jvm.memory.total.*")) {
-				stringBuilder.append("\n {\"{#JVM_MEM_TOTAL}\":\"").append(key).append("\"},");
 			}
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
