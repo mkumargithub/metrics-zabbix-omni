@@ -15,10 +15,7 @@ import io.github.hengyunabc.zabbix.sender.DataObject;
 import io.github.hengyunabc.zabbix.sender.SenderResult;
 import io.github.hengyunabc.zabbix.sender.ZabbixSender;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,12 +165,13 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.timers").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
-	private DataObject metersToDataObjects(List<String> meterskeys) {
+	private DataObject metersToDataObjects(HashSet<String> meterskeys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String mkey : meterskeys) {
 			if (mkey.contains(".responseCodes.")) {
 				int index = mkey.indexOf(".responseCodes.") + ".responseCodes".length();
 				String subKey = mkey.substring(0, index);
+
 				stringBuilder.append("\n {\"{#METERS}\":\"").append(subKey).append("\"},");
 			}
 		}
@@ -205,6 +203,12 @@ public class ZabbixReporter extends ScheduledReporter
 		String type = "timers";
 		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(timer.getCount())));
 	}
+	public static HashSet removeDuplicatesFromList(List list) {
+
+		HashSet<String> set = new LinkedHashSet<String>();
+		set.addAll(list);
+		return set;
+	}
 
 	/**
 	 * for meters.
@@ -223,6 +227,7 @@ public class ZabbixReporter extends ScheduledReporter
 		List<String> cKeys = new LinkedList();
 		List<String> mKeys = new LinkedList();
 		List<String> tKeys = new LinkedList();
+		HashSet<String> set = removeDuplicatesFromList(mKeys);
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			String type ="gauge";
@@ -262,6 +267,7 @@ public class ZabbixReporter extends ScheduledReporter
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
 			//for LLD discovery
 			mKeys.add(entry.getKey());
+
 		}
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
@@ -277,7 +283,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 			//meters
-			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
+			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(set));
 			//counters
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 
