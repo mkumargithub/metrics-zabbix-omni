@@ -132,16 +132,16 @@ public class ZabbixReporter extends ScheduledReporter
 			}*/
 			if (key.matches("jvm.gc.*")) {
 				gcKeys.add(key);
-				for(String gcSubKey : gcKeys) {
-					stringBuilder.append("\n {\"{#JVM_GC}\":\"").append(gcSubKey).append("\"},");
-				}
 			}
 			if (key.matches("jvm.memory.pools.*")) {
 				memKeys.add(key);
-				for(String memSubKey : memKeys) {
-					stringBuilder.append("\n {\"{#JVM_MEM_POOL}\":\"").append(memSubKey).append("\"},");
-				}
 			}
+		}
+		for(String gcSubKey : gcKeys) {
+			stringBuilder.append("\n {\"{#JVM_GC}\":\"").append(gcSubKey).append("\"},");
+		}
+		for(String memSubKey : memKeys) {
+			stringBuilder.append("\n {\"{#JVM_MEM_POOL}\":\"").append(memSubKey).append("\"},");
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
