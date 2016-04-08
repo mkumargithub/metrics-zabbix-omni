@@ -1,6 +1,5 @@
 package io.github.hengyunabc.metrics;
 
-import com.alibaba.fastjson.JSON;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
@@ -244,12 +243,10 @@ public class ZabbixReporter extends ScheduledReporter
 			dataObjectList.add(dataObject);
 			keys.add(apidataObject.getKey());
 		}
-
 		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
 			dataObjectList.add(dataObject);
 		}*/
-
 		for (Map.Entry<String, Counter> entry : counters.entrySet()) {
 			String type ="counters";
 			String suffix = ".count";
