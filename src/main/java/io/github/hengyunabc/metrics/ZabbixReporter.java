@@ -165,7 +165,7 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.timers").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
-	private DataObject metersToDataObjects(List<String> meterskeys) {
+	private DataObject metersToDataObjects(HashSet<String> meterskeys) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (String mkey : meterskeys) {
 			if (mkey.contains(".responseCodes.")) {
@@ -277,7 +277,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 			//meters
-			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(new LinkedList(mKeys)));
+			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
 			//counters
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 
