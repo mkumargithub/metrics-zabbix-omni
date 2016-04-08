@@ -15,10 +15,7 @@ import io.github.hengyunabc.zabbix.sender.DataObject;
 import io.github.hengyunabc.zabbix.sender.SenderResult;
 import io.github.hengyunabc.zabbix.sender.ZabbixSender;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,12 +214,18 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".count." +  responseType, subKey, Long.valueOf(meter.getCount())));
 	}
 
+	public static HashSet removeDuplicatesFromList(List list) {
+		HashSet<String> set = new LinkedHashSet<String>();
+		set.addAll(list);
+		return set;
+	}
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
 		List<String> keys = new LinkedList();
 		List<String> cKeys = new LinkedList();
-		List<String> mKeys = new LinkedList();
+		HashSet<String> mKeys = new LinkedHashSet();
 		List<String> tKeys = new LinkedList();
+
 
 		for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			String type ="gauge";
@@ -262,7 +265,9 @@ public class ZabbixReporter extends ScheduledReporter
 			addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
 			//for LLD discovery
 			mKeys.add(entry.getKey());
+
 		}
+
 		for (Map.Entry<String, Timer> entry : timers.entrySet()) {
 			Timer timer = (Timer) entry.getValue();
 			addTimerDataObject((String) entry.getKey(), timer, dataObjectList);
@@ -277,7 +282,7 @@ public class ZabbixReporter extends ScheduledReporter
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 			//meters
-			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
+			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(new LinkedList<>(mKeys)));
 			//counters
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 
