@@ -214,14 +214,9 @@ public class ZabbixReporter extends ScheduledReporter
 		dataObjectList.add(toDataObject(type, ".count." +  responseType, subKey, Long.valueOf(meter.getCount())));
 	}
 
-	public static HashSet removeDuplicatesFromList(List list) {
-		HashSet<String> set = new LinkedHashSet<String>();
-		set.addAll(list);
-		return set;
-	}
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
-		List<String> keys = new LinkedList();
+		HashSet<String> keys = new LinkedHashSet();
 		List<String> cKeys = new LinkedList();
 		HashSet<String> mKeys = new LinkedHashSet();
 		List<String> tKeys = new LinkedList();
@@ -278,11 +273,11 @@ public class ZabbixReporter extends ScheduledReporter
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
 			//JVM
-			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
+			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(new LinkedList(keys)));
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 			//meters
-			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(new LinkedList<>(mKeys)));
+			SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(new LinkedList(mKeys)));
 			//counters
 			SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
 
