@@ -116,8 +116,10 @@ public class ZabbixReporter extends ScheduledReporter
 
 	private DataObject toDataObjectsJvm(List<String> keys) {
 		StringBuilder stringBuilder = new StringBuilder();
+		HashSet<String> gcKeys = new LinkedHashSet<>();
+		HashSet<String> memKeys = new LinkedHashSet<>();
 		for (String key : keys) {
-			/*if (key.matches("jvm.thread.*") ) {
+            /*if (key.matches("jvm.thread.*") ) {
 				stringBuilder.append("\n {\"{#JVM_THREAD}\":\"").append(key).append("\"},");
 			}
 			if (key.matches("jvm.memory.heap.*")) {
@@ -130,11 +132,17 @@ public class ZabbixReporter extends ScheduledReporter
 				stringBuilder.append("\n {\"{#JVM_MEM_TOTAL}\":\"").append(key).append("\"},");
 			}*/
 			if (key.matches("jvm.gc.*")) {
-				stringBuilder.append("\n {\"{#JVM_GC}\":\"").append(key).append("\"},");
+				gcKeys.add(key);
 			}
 			if (key.matches("jvm.memory.pools.*")) {
-				stringBuilder.append("\n {\"{#JVM_MEM_POOL}\":\"").append(key).append("\"},");
+				memKeys.add(key);
 			}
+		}
+		for(String gcSubKey : gcKeys) {
+			stringBuilder.append("\n {\"{#JVM_GC}\":\"").append(gcSubKey).append("\"},");
+		}
+		for(String memSubKey : memKeys) {
+			stringBuilder.append("\n {\"{#JVM_MEM_POOL}\":\"").append(memSubKey).append("\"},");
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
