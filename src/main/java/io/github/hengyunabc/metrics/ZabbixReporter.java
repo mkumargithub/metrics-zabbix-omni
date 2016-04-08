@@ -165,14 +165,18 @@ public class ZabbixReporter extends ScheduledReporter
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.timers").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
 	}
 
-	private DataObject metersToDataObjects(HashSet<String> meterskeys) {
+	private DataObject metersToDataObjects(List<String> meterskeys) {
 		StringBuilder stringBuilder = new StringBuilder();
+		HashSet<String> subKeys = new LinkedHashSet<>();
 		for (String mkey : meterskeys) {
 			if (mkey.contains(".responseCodes.")) {
 				int index = mkey.indexOf(".responseCodes.") + ".responseCodes".length();
 				String subKey = mkey.substring(0, index);
-				stringBuilder.append("\n {\"{#METERS}\":\"").append(subKey).append("\"},");
+				subKeys.add(subKey);
 			}
+		}
+		for(String subKey : subKeys) {
+			stringBuilder.append("\n {\"{#METERS}\":\"").append(subKey).append("\"},");
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.meters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
@@ -216,9 +220,9 @@ public class ZabbixReporter extends ScheduledReporter
 
 	public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
 		List<DataObject> dataObjectList = new LinkedList();
-		HashSet<String> keys = new LinkedHashSet();
+		List<String> keys = new LinkedList();
 		List<String> cKeys = new LinkedList();
-		HashSet<String> mKeys = new LinkedHashSet();
+		List<String> mKeys = new LinkedList();
 		List<String> tKeys = new LinkedList();
 
 
@@ -273,7 +277,7 @@ public class ZabbixReporter extends ScheduledReporter
 		try {
 			SenderResult senderResult = this.zabbixSender.send(dataObjectList);
 			//JVM
-			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(new LinkedList(keys)));
+			SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
 			//timers
 			SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
 			//meters
