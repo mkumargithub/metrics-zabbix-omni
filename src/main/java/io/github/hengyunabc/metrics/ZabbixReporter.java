@@ -15,10 +15,7 @@ import io.github.hengyunabc.zabbix.sender.DataObject;
 import io.github.hengyunabc.zabbix.sender.SenderResult;
 import io.github.hengyunabc.zabbix.sender.ZabbixSender;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,12 +167,16 @@ public class ZabbixReporter extends ScheduledReporter
 
 	private DataObject metersToDataObjects(List<String> meterskeys) {
 		StringBuilder stringBuilder = new StringBuilder();
+		HashSet<String> subKeys = new LinkedHashSet<>();
 		for (String mkey : meterskeys) {
 			if (mkey.contains(".responseCodes.")) {
 				int index = mkey.indexOf(".responseCodes.") + ".responseCodes".length();
 				String subKey = mkey.substring(0, index);
-				stringBuilder.append("\n {\"{#METERS}\":\"").append(subKey).append("\"},");
+				subKeys.add(subKey);
 			}
+		}
+		for(String subKey : subKeys) {
+			stringBuilder.append("\n {\"{#METERS}\":\"").append(subKey).append("\"},");
 		}
 		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.meters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
