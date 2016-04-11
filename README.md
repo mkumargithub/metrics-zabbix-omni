@@ -3,13 +3,13 @@
 This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/omnifone/ops-asg-metrics-zabbix-servlet) in order to report measures to Zabbix.
 
 ## Import with Maven: ##
-    ...
+
     <dependency>
         <groupId>io.github.hengyunabc</groupId>
         <artifactId>metrics-zabbix</artifactId>
         <version>0.0.1-OMNIFONE</version>
     </dependency>
-    ...
+
 
 
 ## Functionality update:
