@@ -22,7 +22,7 @@ private DataObject toDataObject(String type, String suffix, String key, Object v
 	}
 ```
 
-Example Output:
+######Example Output:
 ```JSON
 trappergot'{
 	"clock": 1460361570763,
@@ -75,7 +75,7 @@ private void addMeterDataObject(String key, Metered meter, List<DataObject> data
 		}
 ```
 
-Example Output:
+######Example Output:
 ```JSON
 trappergot'{
 	"clock": 1460361511709,
@@ -89,7 +89,7 @@ trappergot'{
 }'
 ```
 
-# Example: For metrics values
+## Example: For metrics values
 ```JSON
  27875: 20160411: 075930.698trappergot'{
 	"clock": 1460361570690,
