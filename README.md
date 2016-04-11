@@ -30,8 +30,8 @@ private DataObject toDataObject(String type, String suffix, String key, Object v
 ```
 ######supported metric-keys:
   
-    COUNT
-    USAGE
+    COUNT,
+    USAGE,
     TIME
 
 ######Example Output:
@@ -66,7 +66,6 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
     COUNT
     MEAN,
     P50TH,
-    P75TH,
     P95TH,
     P999TH
 
@@ -98,15 +97,15 @@ private void addMeterDataObject(String key, Metered meter, List<DataObject> data
 ######supported metric-keys:
 
     COUNT
-    	ok
-    	created
-    	noContent
-    	badRequest
-    	notFound
-    	internalServerError
-    	badGateway
-    	serviceUnavailable
-    	gatewayTimeout
+    	ok,
+    	created,
+    	noContent,
+    	badRequest,
+    	notFound,
+    	internalServerError,
+    	badGateway,
+    	serviceUnavailable,
+    	gatewayTimeout,
     	other
     	
 ######Example Output:
