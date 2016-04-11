@@ -8,10 +8,12 @@ timers.count[{#APINAME}] --> timers.stddev[mss.gateway.api.all.requests]
 # Functionality update:
 
 **report()**
+
 report() is created to send API list and result to zabbix sender in JASON format  
 SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 
 **JVM : toDataObjectsJvm()**
+
 toDataObjectsJvm() created to list out all JVM list.
 This function is used for JVM discovery through zabbix frontend
 >You need to define discovery rule with 'dropwizard.lld.key.jvm' key and Prototypes (Ex: gauge.time[{#JVM_GC}]).
@@ -39,7 +41,8 @@ trappergot'{
 ```
 
 **Timers : timersToDataObjects()**
-This function is used for Timers discovery through zabbix frontend
+
+>This function is used for Timers discovery through zabbix frontend
 >You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
 
 addSnapshotDataObjectWithConvertDuration
