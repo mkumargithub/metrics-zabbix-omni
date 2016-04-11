@@ -21,7 +21,6 @@
 	</parent>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>io.github.hengyunabc</groupId>
 			<artifactId>zabbix-sender</artifactId>
