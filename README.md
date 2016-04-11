@@ -49,7 +49,7 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 		}
 ```
 
-####Example Output:
+######Example Output:
 ```JSON
 trappergot'{
 	"clock": 1460361570791,
