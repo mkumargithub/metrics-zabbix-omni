@@ -7,7 +7,7 @@ This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/om
     <dependency>
         <groupId>io.github.hengyunabc</groupId>
         <artifactId>metrics-zabbix</artifactId>
-        <version>0.0.1-OMNIFONETest</version>
+        <version>0.0.1-OMNIFONE</version>
     </dependency>
     ...
 
