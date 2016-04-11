@@ -16,7 +16,7 @@ SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 
 toDataObjectsJvm() created to list out all JVM list.
 This function is used for JVM discovery through zabbix frontend
->You need to define discovery rule with 'dropwizard.lld.key.jvm' key and Prototypes (Ex: gauge.time[{#JVM_GC}]).
+You need to define discovery rule with 'dropwizard.lld.key.jvm' key and Prototypes (Ex: gauge.time[{#JVM_GC}]).
 
 toDataObject
 ```java
@@ -42,8 +42,8 @@ trappergot'{
 
 **Timers : timersToDataObjects()**
 
->This function is used for Timers discovery through zabbix frontend
->You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
+This function is used for Timers discovery through zabbix frontend
+You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
 
 addSnapshotDataObjectWithConvertDuration
 ```java
@@ -68,8 +68,9 @@ trappergot'{
 ```
 
 **Meters : metersToDataObjects()**
+
 This function is used for Meters discovery through zabbix frontend
->You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
+You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
 
 addMeterDataObject
 ```java
