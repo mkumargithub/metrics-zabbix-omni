@@ -1,11 +1,26 @@
 # Metrics-zabbix
 
-Updated zabbixReporter.java file in order to compatible with zabbix key format
+This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/omnifone/ops-asg-metrics-zabbix-servlet) in order to report measures to Zabbix.
 
-now we are able to get the below key format 
-timers.count[{#APINAME}] --> timers.stddev[mss.gateway.api.all.requests]
+## Import with Maven: ##
+    ...
+    <dependency>
+        <groupId>io.github.hengyunabc</groupId>
+        <artifactId>metrics-zabbix</artifactId>
+        <version>0.0.1-OMNIFONE</version>
+    </dependency>
+    ...
 
-# Functionality update:
+
+## Functionality update:
+###report()
+report() is created to send API list and result to zabbix sender in JASON format  
+SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
+
+###JVM : toDataObjectsJvm()
+toDataObjectsJvm() created to list out all JVM list.
+This function is used for JVM discovery through zabbix frontend
+You need to define discovery rule with 'dropwizard.lld.key.jvm' key and Prototypes (Ex: gauge.time[{#JVM_GC}]).
 
 toDataObject
 ```java
@@ -13,14 +28,31 @@ private DataObject toDataObject(String type, String suffix, String key, Object v
 		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
 ```
+######supported metric-keys:
+  
+    COUNT
+    USAGE
+    TIME
 
-addSnapshotDataObject
-```java
-private void addSnapshotDataObject(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
-		String type = "histograms";
-		dataObjectList.add(toDataObject(type, ".min", key, Long.valueOf(snapshot.getMin())));
-		}
+######Example Output:
+```JSON
+trappergot'{
+	"clock": 1460361570763,
+	"data": [{
+		"clock": 1460361570763,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "dropwizard.lld.key.jvm",
+		"value": "{\"data\":[\n {\"{#JVM_GC}\":\"jvm.gc.ConcurrentMarkSweep\"},\n {\"{#JVM_GC}\":\"jvm.gc.ParNew\"},\n {\"{#JVM_MEM_POOL}\":\"jvm.memory.pools.CMS-Old-Gen\"},\n {\"{#JVM_MEM_POOL}\":\"jvm.memory.pools.CMS-Perm-Gen\"},\n {\"{#JVM_MEM_POOL}\":\"jvm.memory.pools.Code-Cache\"},\n {\"{#JVM_MEM_POOL}\":\"jvm.memory.pools.Par-Eden-Space\"},\n {\"{#JVM_MEM_POOL}\":\"jvm.memory.pools.Par-Survivor-Space\"}]}"
+	}],
+	"request": "sender data"
+}'
+
 ```
+
+###Timers : timersToDataObjects()
+This function is used for Timers discovery through zabbix frontend
+You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
+
 addSnapshotDataObjectWithConvertDuration
 ```java
 private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snapshot, List<DataObject> dataObjectList) {
@@ -29,6 +61,33 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 		}
 ```
 
+######supported metric-keys:
+  
+    COUNT
+    MEAN,
+    P50TH,
+    P75TH,
+    P95TH,
+    P999TH
+
+######Example Output:
+```JSON
+trappergot'{
+	"clock": 1460361570791,
+	"data": [{
+		"clock": 1460361570791,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "dropwizard.lld.key.timers",
+		"value": "{\"data\":[\n {\"{#TIMERS}\":\"mss.gateway.api.all.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.batchGetArtists.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.batchGetRecordings.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.batchGetReleases.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.batchGetSets.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.batchGetTrackAudioAssets.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.batchGetTracks.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.deleteArtist.requests\"},\n {\"{#TIMERS}\":\"mss.gateway.api.updateUserDevice.requests\"}]}"
+	}],
+	"request": "sender data"
+}'
+```
+
+###Meters : metersToDataObjects()
+This function is used for Meters discovery through zabbix frontend
+You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
+
 addMeterDataObject
 ```java
 private void addMeterDataObject(String key, Metered meter, List<DataObject> dataObjectList) {
@@ -36,171 +95,92 @@ private void addMeterDataObject(String key, Metered meter, List<DataObject> data
 		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
 		}
 ```
+######supported metric-keys:
 
-report: keys added 
-SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
-```java
-public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
-	List<DataObject> dataObjectList = new LinkedList();
-	List<String> keys = new LinkedList();
-	List<String> cKeys = new LinkedList();
-	List<String> mKeys = new LinkedList();
-	List<String> tKeys = new LinkedList();
-
-	for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-		String type ="gauge";
-		DataObject dataObject = DataObject.builder().host(this.hostName).key(type + "[" + (String) entry.getKey() + "]").value(((Gauge) entry.getValue()).getValue().toString()).build();
-		DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey()).value(((Gauge) entry.getValue()).getValue().toString()).build();
-		dataObjectList.add(dataObject);
-		keys.add(apidataObject.getKey());
-	}
-
-		/*for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-			DataObject dataObject = DataObject.builder().host(this.hostName).key(this.prefix + (String) entry.getKey()).value("" + ((Counter) entry.getValue()).getCount()).build();
-			dataObjectList.add(dataObject);
-		}*/
-
-	for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-		String type ="counters";
-		String suffix = ".count";
-		DataObject dataObject = DataObject.builder().host(this.hostName).key(type + suffix + "[" + (String) entry.getKey() + "]").value("" + ((Counter) entry.getValue()).getCount()).build();
-		// apidataObject for APIs list without type and suffix
-		DataObject apidataObject = DataObject.builder().host(this.hostName).key((String) entry.getKey() ).value("" + ((Counter) entry.getValue()).getCount()).build();
-		dataObjectList.add(dataObject);
-		cKeys.add(apidataObject.getKey());
-
-	}
-	for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
-		Histogram histogram = (Histogram) entry.getValue();
-		Snapshot snapshot = histogram.getSnapshot();
-		addSnapshotDataObject((String) entry.getKey(), snapshot, dataObjectList);
-		keys.add(entry.getKey());
-	}
-	for (Map.Entry<String, Meter> entry : meters.entrySet()) {
-		Meter meter = (Meter) entry.getValue();
-		addMeterDataObject((String) entry.getKey(), meter, dataObjectList);
-		mKeys.add(entry.getKey());
-	}
-	for (Map.Entry<String, Timer> entry : timers.entrySet()) {
-		Timer timer = (Timer) entry.getValue();
-		addMeterDataObject((String) entry.getKey(), timer, dataObjectList);
-		addSnapshotDataObjectWithConvertDuration((String) entry.getKey(), timer.getSnapshot(), dataObjectList);
-		tKeys.add(entry.getKey());
-	}
-
-	try {
-        	SenderResult senderResult = this.zabbixSender.send(dataObjectList);
-        	//JVM
-        	SenderResult senderGaugesAPIsList = this.zabbixSender.send(toDataObjectsJvm(keys));
-        	//counters
-        	SenderResult senderCountersAPIsList = this.zabbixSender.send(countersToDataObjects(cKeys));
-        	//meters
-        	SenderResult senderMetersAPIsList = this.zabbixSender.send(metersToDataObjects(mKeys));
-        	//timers
-        	SenderResult senderTimersAPIsList = this.zabbixSender.send(timersToDataObjects(tKeys));
-
-		if ( !!senderResult.success() && !!senderGaugesAPIsList.success() && !!senderMetersAPIsList.success() && !!senderTimersAPIsList.success() && !!senderCountersAPIsList.success()) {
-			logger.warn("report APIs List & metrics to zabbix not success!" + senderResult);
-		} else if (logger.isDebugEnabled()) {
-			logger.info("report metrics to zabbix success. " + senderResult);
-		}
-	} catch (IOException e) {
-		logger.error("report APIs List & metrics to zabbix error!");
-	}
-}
+    COUNT
+    	ok
+    	created
+    	noContent
+    	badRequest
+    	notFound
+    	internalServerError
+    	badGateway
+    	serviceUnavailable
+    	gatewayTimeout
+    	other
+    	
+######Example Output:
+```JSON
+trappergot'{
+	"clock": 1460361511709,
+	"data": [{
+		"clock": 1460361511709,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "dropwizard.lld.key.meters",
+		"value": "{\"data\":[\n {\"{#METERS}\":\"mss.gateway.api.all.responseCodes\"},\n {\"{#METERS}\":\"mss.gateway.api.batchGetArtists.responseCodes\"},\n {\"{#METERS}\":\"mss.gateway.api.updateUser.responseCodes\"},\n {\"{#METERS}\":\"mss.gateway.api.updateUserDevice.responseCodes\"}]}"
+	}],
+	"request": "sender data"
+}'
 ```
 
-methods created to list out all APIs and JVM list
-```java
-/**
-	 * All JVM APIs List for zabbix lld
-	 */
-
-	private DataObject toDataObjectsJvm(List<String> keys) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (String key : keys) {
-			if (key.matches("jvm.memory.total.*committed") || key.matches("jvm.*init") || key.matches("jvm.*max") || key.matches("jvm.memory.total.*used") ) {
-				stringBuilder.append("\n {\"{#JVMAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-			if (key.matches("jvm.memory.heap.*usage") || key.matches("jvm.fd.*usage") || key.matches("jvm.memory.non-heap.*usage") ) {
-				stringBuilder.append("\n {\"{#JVMUAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-			if (key.matches("jvm.memory.heap.*used") || key.matches("jvm.memory.heap.*committed")) {
-				stringBuilder.append("\n {\"{#JHAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-			if (key.matches("jvm.memory.non-heap.*used") || key.matches("jvm.memory.non-heap.*committed")) {
-				stringBuilder.append("\n {\"{#JNHAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-			if (key.matches("jvm.*time")) {
-				stringBuilder.append("\n {\"{#JTAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-			if (key.matches("jvm.memory.pools.*usage")) {
-				stringBuilder.append("\n {\"{#JMUAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-			if (key.matches("jvm.gc.*count") ) {
-				stringBuilder.append("\n {\"{#JGCAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-			if (key.matches("jvm.thread-states.*count") ) {
-				stringBuilder.append("\n {\"{#JTCAPINAME}\":\"").append(key).append("\"},");
-				//logger.debug("AllAPIsKeys: " + key);
-			}
-		}
-		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.jvm").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
-	}
-
-	/**
-	 * All APIs List for zabbix lld
-	 */
-
-	private DataObject countersToDataObjects(List<String> keys) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (String countersKey : keys) {
-			if (countersKey.contains(".activeRequests")) {
-				stringBuilder.append("\n {\"{#CAPINAME}\":\"").append(countersKey).append("\"},");
-			}
-		}
-		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.counters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
-	}
-
-	private DataObject timersToDataObjects(List<String> keys) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (String timersKey : keys) {
-			if (timersKey.contains(".requests")) {
-				stringBuilder.append("\n {\"{#TAPINAME}\":\"").append(timersKey).append("\"},");
-			}
-		}
-		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.timers").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
-	}
-
-	private DataObject metersToDataObjects(List<String> meterskeys) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (String mkey : meterskeys) {
-			if (mkey.contains(".responseCodes.")) {
-				stringBuilder.append("\n {\"{#MAPINAME}\":\"").append(mkey).append("\"},");
-			}
-		}
-		stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-		return DataObject.builder().host(this.hostName).key("dropwizard.lld.key.meters").value("{\"data\":[" + stringBuilder.toString() + "]}").build();
-	}
-```
-
-# Real example: 
-For APIs List
-```
-3415 : 20160216 : 141919.987 trapper got '{"clock":1456403903190,"data":[{"clock":1456403903190,"host":"te2.oss-hub.uk3.ribob01.net","key":"dropwizard.lld.key","value":"{\"data\":[\n {\"{#APINAME}\":\"jvm.fd.usage\"},\n {\"{#APINAME}\":\"mss.gateway.api.getTransactionDownloadHistory.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUser.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserContextIdTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserContextTypeTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserDevice.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserDeviceIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserDeviceTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserPurchasedItem.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserPurchasedItemBatch.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.getUserTrackPlayIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.purchaseDownloads.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.refundPurchase.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.reportPurchase.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.reportTrackPlayEvent.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.reportTrackPlays.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.sortArtistIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.sortReleaseIds.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateArtist.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateRelease.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateReleaseLicense.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateSubscription.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateTrack.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateTrackLicense.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateTrackPlayContexts.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateUser.requests\"},\n {\"{#APINAME}\":\"mss.gateway.api.updateUserDevice.requests\"}]}"}],"request":"sender data"}'
-```
-
-For metrics values
-```
-3413 : 20160216 : 141920.045 trapper got '{"clock":1456403902846,"data":[{"clock":1456403902836,"host":"te2.oss-hub.uk3.ribob01.net","key":"gauge[jvm.fd.usage]","value":"0.061767578125"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"meters.1-minuteRate[mss.gateway.api.updateUserDevice.requests]","value":"2.964393875E-314"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"meters.5-minuteRate[mss.gateway.api.updateUserDevice.requests]","value":"7.362691676869196E-129"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"meters.15-minuteRate[mss.gateway.api.updateUserDevice.requests]","value":"3.3071448206190163E-44"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.min[mss.gateway.api.updateUserDevice.requests]","value":"44.605582"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.max[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.mean[mss.gateway.api.updateUserDevice.requests]","value":"136.063127375"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.stddev[mss.gateway.api.updateUserDevice.requests]","value":"236.53661471257732"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.median[mss.gateway.api.updateUserDevice.requests]","value":"52.844451"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p75[mss.gateway.api.updateUserDevice.requests]","value":"62.343593999999996"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p95[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p98[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p99[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"},{"clock":1456403902846,"host":"te2.oss-hub.uk3.ribob01.net","key":"timers.p999[mss.gateway.api.updateUserDevice.requests]","value":"721.268999"}],"request":"sender data"}'
+## Example: For metrics values
+```JSON
+ 27875: 20160411: 075930.698trappergot'{
+	"clock": 1460361570690,
+	"data": [{
+		"clock": 1460361570685,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "gauge.usage[jvm.fd]",
+		"value": "0.06201171875"
+	},
+	{
+		"clock": 1460361570685,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "gauge.count[jvm.gc.ConcurrentMarkSweep]",
+		"value": "2"
+	},
+	{
+		"clock": 1460361570685,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "gauge.time[jvm.gc.ConcurrentMarkSweep]",
+		"value": "1248"
+	},
+	{
+		"clock": 1460361570689,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "meters.count.other[mss.gateway.api.batchGetTrackAudioAssets.responseCodes]",
+		"value": "0"
+	},
+	{
+		"clock": 1460361570689,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "meters.count.serviceUnavailable[mss.gateway.api.batchGetTrackAudioAssets.responseCodes]",
+		"value": "0"
+	},
+	{
+		"clock": 1460361570690,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "timers.p95[mss.gateway.api.getRelease.requests]",
+		"value": "0.6108730819999999"
+	},
+	{
+		"clock": 1460361570690,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "timers.p999[mss.gateway.api.getRelease.requests]",
+		"value": "0.6108730819999999"
+	},
+	{
+		"clock": 1460361570690,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "timers.count[mss.gateway.api.getReleaseIds.requests]",
+		"value": "8"
+	},
+	{
+		"clock": 1460361570690,
+		"host": "te2.oss-hub.uk3.ribob01.net",
+		"key": "timers.p999[mss.gateway.api.updateUserDevice.requests]",
+		"value": "0.819407643"
+	}],
+	"request": "sender data"
+}'
 ```
