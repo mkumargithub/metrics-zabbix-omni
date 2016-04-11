@@ -1,9 +1,16 @@
 # Metrics-zabbix
 
-Updated zabbixReporter.java file in order to compatible with zabbix key format
+This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/omnifone/ops-asg-metrics-zabbix-servlet) in order to report measures to Zabbix.
 
-now we are able to get the below key format 
-timers.count[{#APINAME}] --> timers.stddev[mss.gateway.api.all.requests]
+## Import with Maven: ##
+    ...
+    <dependency>
+        <groupId>io.github.hengyunabc</groupId>
+        <artifactId>metrics-zabbix</artifactId>
+        <version>0.0.1-OMNIFONETest</version>
+    </dependency>
+    ...
+
 
 ## Functionality update:
 ###report()
@@ -21,6 +28,11 @@ private DataObject toDataObject(String type, String suffix, String key, Object v
 		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
 ```
+######supported metric-keys:
+  
+    COUNT
+    USAGE
+    TIME
 
 ######Example Output:
 ```JSON
@@ -49,6 +61,15 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 		}
 ```
 
+######supported metric-keys:
+  
+    COUNT
+    MEAN,
+    P50TH,
+    P75TH,
+    P95TH,
+    P999TH
+
 ######Example Output:
 ```JSON
 trappergot'{
@@ -74,7 +95,20 @@ private void addMeterDataObject(String key, Metered meter, List<DataObject> data
 		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
 		}
 ```
+######supported metric-keys:
 
+    COUNT
+    	ok
+    	created
+    	noContent
+    	badRequest
+    	notFound
+    	internalServerError
+    	badGateway
+    	serviceUnavailable
+    	gatewayTimeout
+    	other
+    	
 ######Example Output:
 ```JSON
 trappergot'{
