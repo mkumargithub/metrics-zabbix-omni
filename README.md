@@ -1,5 +1,4 @@
 # Metrics-zabbix
-
 This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/omnifone/ops-asg-metrics-zabbix-servlet) in order to report measures to Zabbix.
 
 For more details you may visit [Developer Guide] (http://confluence.omnifone.com/display/OPS/Dropwizard+-+metrics-zabbix-servlet+-+Developer+Guide#Dropwizard-metrics-zabbix-servlet-DeveloperGuide)
