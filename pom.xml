@@ -15,7 +15,7 @@
 
 
 	<parent>
-		<groupId>com.omnifone.platform.maven.release</groupId>
+		<groupId>com.platform.maven.release</groupId>
 		<artifactId>release-parent</artifactId>
 		<version>1.0.1</version>
 	</parent>
