@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.hengyunabc</groupId>
 	<artifactId>metrics-zabbix</artifactId>
-	<version>0.0.1-OMNIFONE</version>
+	<version>0.0.1-zabbix</version>
 
 	<properties>
 		<maven.compiler.target>1.7</maven.compiler.target>
@@ -14,17 +14,17 @@
 	</properties>
 
 
-	<parent>
+	<!--<parent>
 		<groupId>com.platform.maven.release</groupId>
 		<artifactId>release-parent</artifactId>
 		<version>1.0.1</version>
-	</parent>
+	</parent>-->
 
 	<dependencies>
 		<dependency>
 			<groupId>io.github.hengyunabc</groupId>
 			<artifactId>zabbix-sender</artifactId>
-			<version>0.0.1-OMNIFONE</version>
+			<version>0.0.1</version>
 		</dependency>
 
 		<dependency>

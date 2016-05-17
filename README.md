@@ -1,14 +1,12 @@
 # Metrics-zabbix
-This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/omnifone/ops-asg-metrics-zabbix-servlet) in order to report measures to Zabbix.
-
-For more details you may visit [Developer Guide] (http://confluence.omnifone.com/display/OPS/Dropwizard+-+metrics-zabbix-servlet+-+Developer+Guide#Dropwizard-metrics-zabbix-servlet-DeveloperGuide)
+This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/mkumaromnifone/ops-asg-metrics-zabbix-servlet.git) in order to report measures to Zabbix.
 
 ## Import with Maven: ##
 
     <dependency>
         <groupId>io.github.hengyunabc</groupId>
         <artifactId>metrics-zabbix</artifactId>
-        <version>0.0.1-OMNIFONE</version>
+        <version>0.0.1-zabbix</version>
     </dependency>
 
 
