@@ -12,11 +12,11 @@ This project is addon for [ops-asg-metrics-zabbix-servlet](https://github.com/mk
 
 
 ## Functionality update:
-###report()
+### report()
 report() is created to send API list and result to zabbix sender in JASON format  
 SenderResult senderAPIsResult = this.zabbixSender.send(toDataObjects(keys));
 
-###JVM : toDataObjectsJvm()
+### JVM : toDataObjectsJvm()
 toDataObjectsJvm() created to list out all JVM list.
 This function is used for JVM discovery through zabbix frontend
 You need to define discovery rule with 'dropwizard.lld.key.jvm' key and Prototypes (Ex: gauge.time[{#JVM_GC}]).
@@ -27,13 +27,13 @@ private DataObject toDataObject(String type, String suffix, String key, Object v
 		return DataObject.builder().host(this.hostName).key(type + suffix + "[" + key + "]").value("" + value).build();
 	}
 ```
-######supported metric-keys:
+###### supported metric-keys:
   
     COUNT,
     USAGE,
     TIME
 
-######Example Output:
+###### Example Output:
 ```JSON
 trappergot'{
 	"clock": 1460361570763,
@@ -48,7 +48,7 @@ trappergot'{
 
 ```
 
-###Timers : timersToDataObjects()
+### Timers : timersToDataObjects()
 This function is used for Timers discovery through zabbix frontend
 You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
 
@@ -60,7 +60,7 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
 		}
 ```
 
-######supported metric-keys:
+###### Supported metric-keys:
   
     COUNT
     MEAN,
@@ -68,7 +68,7 @@ private void addSnapshotDataObjectWithConvertDuration(String key, Snapshot snaps
     P95TH,
     P999TH
 
-######Example Output:
+###### Example Output:
 ```JSON
 trappergot'{
 	"clock": 1460361570791,
@@ -82,7 +82,7 @@ trappergot'{
 }'
 ```
 
-###Meters : metersToDataObjects()
+### Meters : metersToDataObjects()
 This function is used for Meters discovery through zabbix frontend
 You need to define discovery rule with 'dropwizard.lld.key.timers' key and Prototypes (EX: timers.p50[{#TIMERS}]).
 
@@ -93,7 +93,7 @@ private void addMeterDataObject(String key, Metered meter, List<DataObject> data
 		dataObjectList.add(toDataObject(type, ".count", key, Long.valueOf(meter.getCount())));
 		}
 ```
-######supported metric-keys:
+###### supported metric-keys:
 
     COUNT
     	ok,
@@ -107,7 +107,7 @@ private void addMeterDataObject(String key, Metered meter, List<DataObject> data
     	gatewayTimeout,
     	other
     	
-######Example Output:
+###### Example Output:
 ```JSON
 trappergot'{
 	"clock": 1460361511709,
